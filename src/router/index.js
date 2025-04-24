@@ -1,13 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Inventory from '../views/Inventory.vue'
+import Profile from '../views/Profile.vue'
 import Dashboard from '../views/Dashboard.vue'
-import LoginTracker from '../views/LoginTracker.vue'
-import StockReport from '../views/StockReport.vue'
 import Login from '../views/Login.vue'
-import HelpSupport from '../views/HelpSupport.vue'
-import StaffDashboard from '../views/StaffDashboard.vue'
-import StaffHelpSupport from '../views/StaffHelpSupport.vue'
-import StaffInventory from '../views/StaffInventory.vue'
+import HelpSupport from '../views/Profile.vue'
+import History from '../views/History.vue'
+import Game from '../views/Game.vue'
+
 
 
 const routes = [
@@ -20,7 +18,7 @@ const routes = [
     path: '/Dashboard',
     name: 'Dashboard',
     component: Dashboard,
-     meta: { requiresAuth: true } // Only authenticated users can access this
+    //  meta: { requiresAuth: true } // Only authenticated users can access this
    
   },
   {
@@ -30,42 +28,25 @@ const routes = [
 
   },
   {
-    path: '/Inventory',
-    name: 'Inventory',
-    component: Inventory,
+    path: '/Profile',
+    name: 'Profile',
+    component: Profile,
    
   },
   {
-    path: '/StockReport',
-    name: 'StockReport',
-    component: StockReport,
-   
-  },
-  {
-    path: '/LoginTracker',
-    name: 'LoginTracker',
-    component: LoginTracker,
-    
-    
-  },
-  {
-    path: '/StaffDashboard',
-    name: 'StaffDashboard',
-    component: StaffDashboard,
+    path: '/Game',
+    name: 'Game',
+    component: Game,
 
   },
+
   {
-    path: '/StaffHelpSupport',
-    name: 'StaffHelpSupport',
-    component: StaffHelpSupport,
+    path: '/History',
+    name: 'History',
+    component: History,
 
   },
-  {
-    path: '/StaffInventory',
-    name: 'StaffInventory',
-    component: StaffInventory,
-
-  },
+  
   {
     path: '/Login',
     name: 'Login',

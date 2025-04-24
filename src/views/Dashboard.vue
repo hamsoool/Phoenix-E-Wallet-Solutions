@@ -1,855 +1,835 @@
 <template>
-    <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Dashboard</title>
-       <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp "
-       rel="stylesheet">  
-       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-     rel="stylesheet">
-         <!-- style sheet eme -->
-       <link rel="stylesheet" href="style.css">
-   </head>
-   <div class="container">
-       <aside>
-                   <div class="top">
-                       <div class="logo">
-                           <img src="../assets/images/logo cloud.png" alt="logo">
-                           <h2 class="stock_up">Stock Up</h2>
-                       </div>
-                        <div class = "close" id = "close-btn">
-                           <span class="material-icons-sharp">close</span>
-                        </div>
-                   </div>
-                   <div class="sidebar">
-           <router-link to="/Dashboard" class=" active">
-               <span class="material-icons-sharp">grid_view</span>
-               <h3>Dashboard</h3>
-           </router-link>
-       
-           <router-link to="/Inventory">
-               <span class="material-icons-sharp">inventory</span>
-               <h3>Inventory</h3>
-           </router-link>
-       
-           <router-link to="/StockReport">
-               <span class="material-icons-sharp">bar_chart</span>
-               <h3>Stock Report</h3>
-           </router-link>
-       
-           <router-link to="/LoginTracker">
-               <span class="material-icons-sharp">track_changes</span>
-               <h3>Login Tracker</h3>
-           </router-link>
-       
-           <router-link to="/HelpSupport" >
-               <span class="material-icons-sharp">help</span>
-               <h3>Help Support</h3>
-           </router-link>
-       
-           <router-link to="/Logout">
-               <span class="material-icons-sharp">logout</span>
-               <h3>Logout</h3>
-           </router-link>
-       </div>
-               </aside>
-   <main>
-             <h1 class="dash-text">Dashboard</h1>
-              <div class="date">
-                <input type="date">
-              </div>
-   
-           <div class="insights">
-               <div class="sales"> 
-                     <span class="material-icons-sharp"> analytics </span>
-                   <div class="middle">
-                       <div class="left">
-                           <h3>Total Stocks</h3>
-                           <h2>800 stocks</h2>
-                       </div>
-                   </div>
-               </div>
-               <!-- end of ka emehan sales track -->
-   
-               <!-- start of income  -->
-               <div class="expenses"> 
-                   <span class="material-icons">trending_up</span>    
-                 <div class="middle">
-                     <div class="left">
-                         <h3>Total High Stocks</h3>
-                         <h2>400 stocks</h2>
-                     </div>    
-                 </div>
-                 
-             </div>
-   
-             <!-- 2nd card total stocks -->
-   
-             <div class="income"> 
-               <span class="material-icons"> trending_down</span>
-             <div class="middle">
-                 <div class="left">
-                     <h3>Total Low Stock</h3>
-                     <h2>400 stocks </h2>
-                 </div>
-             </div>
-         </div>
-   
-         <!-- 3nd card INCOME  -->
-   </div>
-       <!--   INVENTORY TRACKER  -->
-       <div class="recent-orders">
-           <h2> Inventory</h2>
-           <table>
-               <thead>
-                   <tr>
-                       <th>Product Id</th>
-                       <th>Product</th>
-                       <th>Category</th>
-                       <th>Quantity</th>
-                       <th>Status</th>
-                   <tr></tr>
-               </tr>
-            </thead>
-           <tbody>
-               <tr>
-                   <td>101</td>
-                   <td>Pencil</td>
-                   <td>Writing Supply</td>
-                   <td>11</td>
-                   <td class="warning">Low</td>
-               </tr>
-               <tr>
-                   <td>101</td>
-                   <td>Pencil</td>
-                   <td>Writing Supply</td>
-                   <td>11</td>
-                   <td class="warning">Low</td>
-               </tr>
-               <tr>
-                   <td>101</td>
-                   <td>Pencil</td>
-                   <td>Writing Supply</td>
-                   <td>11</td>
-                   <td class="warning">Low</td>
-               </tr>
-               <tr>
-                   <td>101</td>
-                   <td>Pencil</td>
-                   <td>Writing Supply</td>
-                   <td>11</td>
-                   <td class="warning">Low</td>
-               </tr>
-               <tr>
-                   <td>101</td>
-                   <td>Pencil</td>
-                   <td>Writing Supply</td>
-                   <td>11</td>
-                   <td class="warning">Low</td>
-               </tr>
-           </tbody>
-        </table>
-        <a href="#"> Show All</a>
-       </div>
-       <div class = "right">
-           <div class= "top">
-               <button id ="menu-btn">
-                   <span class="material-icons-sharp">menu</span>
-               </button>
-           </div>
-       </div>
-           <!-- End of top -->
-            <!-- tracker  -->
-            <div class="tracker">
-           <h2> Login tracker</h2>
-           <table>
-                    <thead>
-                      <tr>
-                        <th>Staff ID</th>
-                        <th>Name</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                          <td>001</td>
-                          <td>Janico Sorio</td>
-                          <td>November 23, 2024 08:00 AM</td>
-                          <td>November 23, 2024 04:30 PM</td>
-                      </tr>
-                      <tr>
-                          <td>002</td>
-                          <td>Catherine Mon</td>
-                          <td>November 23, 2024 08:15 AM</td>
-                          <td>November 23, 2024 05:00 PM</td>
-                      </tr>
-                      <tr>
-                          <td>003</td>
-                          <td>Justin Del Rosario</td>
-                          <td>November 23, 2024 09:00 AM</td>
-                          <td>November 23, 2024 06:00 PM</td>
-                      </tr>
-                      <tr>
-                          <td>004</td>
-                          <td>Kent Ann Ecal</td>
-                          <td>November 23, 2024 08:30 AM</td>
-                          <td>November 23, 2024 05:15 PM</td>
-                      </tr>
-                      <tr>
-                          <td>005</td>
-                          <td>Johannes De Jesus</td>
-                          <td>November 23, 2024 08:30 AM</td>
-                          <td>November 23, 2024 05:15 PM</td>
-                      </tr>
-                  </tbody>            
-                  </table>
-        <a href="#"> Show All</a>
-   
-   
-   
-       </div>
-       </main>
-       <!-- END OF MAIN -->
-       <!-- Profile on top  -->
-   
-   </div>
-               <!-- End Recent  -->
-   
-       <!-- <script src="./order.js"></script>
-       <script src="./index.js"></script> -->
-   </template>
-   
-   <script>
-   
-   // const sideMenu = document.querySelector("aside");
-   // const menuBtn = document.querySelector("#menu-btn");
-   // const closeBtn = document.querySelector("#close-btn");
-   
-   // menuBtn.addEventListener("click", () => {
-   //     sideMenu.classList.add("show");
-   // });
-   
-   // closeBtn.addEventListener("click", () => {
-   //     sideMenu.classList.remove("show");
-   // });
-   
-   </script>
-   
-   <style scoped> 
-   
-   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-   
-    *{
-       margin: 0; 
-       padding: 0;
-       outline: 0;
-       appearance: none;
-       border: 0;
-       text-decoration: none;
-       list-style: none;
-       box-sizing: border-box;
-    }
-   
-    html{
-        font-size:14px; 
-         }
-   
-   body {
-       background: url(../assets/images/back.png);
-       background-repeat: no-repeat;
-       background-attachment: fixed;
-       background-size: cover;
-       width: 100vw;
-       height: 100vh;
-       font-family: poppins, sans-serif;
-       font-size: 0.88rem;
-       user-select: none; 
-       overflow-x:hidden;  
-       color: #363949;
-   }
-   
-   .container{
-       display: grid;
-       width: 96%;
-       gap:3vh;
-       grid-template-columns: 14rem auto ;
-       height: 100vh;
-   }
-   
-   
-   a {
-       color: #363636;
-   }
-   
-   
-   img {
-       display: block;
-       width: 100%;
-   }
-   
-   
-   h1 {
-       font-weight: 800;
-       font-size: 1.8rem;
-   }
-   
-   
-   h2 {
-       font-size: 1.4rem;
-   }
-   
-   
-   h3 {
-       font-size: 0.87rem;
-   }
-   
-   
-   .text-muted {
-       color: #7d8da1;
-   }
-   
-   
-   h4 {
-       font-size: 0.87;
-   }
-   
-   
-   p {
-       color: #677483;
-   }
-   
-   
-   b {
-       color: #677483;
-   }
-   
-   
-   aside {
-       height: 100vh;  
-       background-color: white;
-       position: fixed;
-       left: 0;
-       top: 0;
-       width: 14rem;
-       z-index: 10;
-   }
-   
-   
-   aside .top {
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-       margin-top: 1.4rem;
-       margin-left: 2rem;
-   }
-   
-   
-   aside .logo {
-       display: flex;
-       gap: 0.8rem;
-       position: relative;
-   }
-   
-   
-   aside .logo img {
-       width: 2rem;
-       height: 2rem;
-   }
-   
-   
-   aside .close {
-       display: none;
-   }
-   
-   
-   aside .sidebar {
-       background: white;
-       display: flex;
-       flex-direction: column;
-       height: 86vh;
-       position: relative;
-       top: 3rem;
-   }
-   
-   
-   aside h3 {
-       font-weight: 500;
-   }
-   
-   
-   aside .sidebar a {
-       display: flex;
-       color: #677483;
-       margin-left: 2rem;
-       gap: 1rem;
-       align-items: center;
-       position: relative;
-       height: 3.7rem;
-       transition: all 300ms ease;
-   }
-   
-   
-   aside .sidebar a span {
-       font-size: 1.6rem;
-       transition: all 300ms ease;
-   }
-   
-   
-   aside .sidebar a:last-child {
-       position: absolute;
-       bottom: 2rem;
-       width: 100%;
-   }
-   
-   
-   aside .sidebar a.active {
-       background: aqua;
-       color: blue;
-       margin-left: 0;
-   }
-   
-   
-   aside .sidebar a.active:before {
-       content: '';
-       width: 6px;
-       height: 100%;
-       background: blue;
-   }
-   
-   
-   aside .sidebar a:hover {
-       color: var(#f74d4d);
-   }
-   
-   
-   aside .sidebar a:hover span {
-       margin-left: 1rem;
-   }
-   
-   /*  ======== MAIN DASH BOARD ============== */
-   main{ 
-       margin-top: 1rem;
-       grid-column: 2;
-       padding: 1rem;
-   }
-   
-   
-   main .dash-text{
-       color: black;
-   }
-   
-   main .date{
-       display: inline-block;
-       background: rgba(148, 129, 129, 0.18);
-       border-radius:  0.4rem;
-       margin-top: 1rem;
-       padding: 0.5rem 1.6rem;
-   }
-   
-   main .date input[type="date"]{
-       background: transparent; 
-       color: #212640;;
-   }
-   
-   main .insights {
-       display: grid;
-       grid-template-columns: repeat(3, 1fr);
-       gap: 1.6rem;
-   
-   }
-   
-   main .insights > div {
-       background: rgba(250, 250, 550, 0.5);
-       padding: 1.3rem;
-       border-radius: 2rem ;
-       margin-top: 1rem;
-       box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-       transition: all 300ms ease;
-   }
-   
-   main .insights > div:hover {
-       box-shadow: none;
-   }
-   
-   main .insights > div span { 
-       background: blue;
-       padding: 0.5rem;
-       border-radius: 50%;
-       color: white;
-       font-size: 2rem;
-   }
-   
-   main .insights > div.expenses span {
-       background: green;
-   }
-   main .insights > div.income span {
-       background-color: red;
-   }
-   
-   main .insights > div .middle {
-       display: flex;
-       align-items: center;
-       justify-content: space-between;
-   }
-   
-   main .insights h3{
-       margin: 1rem 0 0.6rem;
-       font-size: 1rem;
-   }
-   
-   main .insights .progress {
-       position: relative;
-       width: 92px;
-       height: 92px;
-       border-radius: 50%;
-   }
-   
-   
-   main .insights .progress .number{
-       position: absolute;
-       top: 0;
-       left: 0;
-       height: 100%;
-       width: 100%;
-       display: flex;
-       align-items: center;
-   }
-   
-   main .insights small{
-       margin-top: 1.6rem;
-       display: block;
-   }
-   
-   /* ======================Inventory========== */
+  <div class="container">
+    <!-- Fixed Sidebar Navigation -->
+    <aside id="sidebar" :class="{ 'show': isSidebarOpen }">
+      <div class="sidebar-header">
+        <div class="logo">
+          <img src="../assets/images/newlogo.png" alt="Phoenix Logo">
+        </div>
+        <button class="close-btn" @click="closeSidebar">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" :class="{ active: currentPage === 'dashboard' }" @click.prevent="setActivePage('dashboard')">
+          <span class="material-icons">dashboard</span>
+          <h3>Dashboard</h3>
+        </a>
+        <a href="#" :class="{ active: currentPage === 'profile' }" @click.prevent="setActivePage('profile')">
+          <span class="material-icons">person</span>
+          <h3>Profile</h3>
+        </a>
+        <a href="#" :class="{ active: currentPage === 'game' }" @click.prevent="setActivePage('game')">
+          <span class="material-icons">sports_esports</span>
+          <h3>Game</h3>
+        </a>
+        <a href="#" :class="{ active: currentPage === 'history' }" @click.prevent="setActivePage('history')">
+          <span class="material-icons">history</span>
+          <h3>History</h3>
+        </a>
+        <a href="#" :class="{ active: currentPage === 'help' }" @click.prevent="setActivePage('help')">
+          <span class="material-icons">help</span>
+          <h3>Help & Support</h3>
+        </a>
+        <a href="#" @click.prevent="logout">
+          <span class="material-icons">logout</span>
+          <h3>Logout</h3>
+        </a>
+      </nav>
+    </aside>
     
-   main .recent-orders{
-       margin-top: 2rem;
-   }
-   
-   main .recent-orders  h2 {
-       margin-bottom: 0.8rem;
-   }
-   
-   main .recent-orders table{
-       background:rgba(250, 250, 550, 0.8);
-       width: 100%;
-       border-radius: 2rem;
-       padding: 1.8rem;
-       text-align: center;
-       box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-       /* transition: all 300ms ease; */
-   }
-   
-   
-   main .recent-orders table:hover{
-       box-shadow: none;
-   }
-   
-   main table tbody td{
-       height: 2.8rem ;
-       border-bottom: 1px solid grey;
-       color: #677483;
-   }
-   
-   main table tbody tr:last-child{
-       border: none
-   }
-   
-   main .recent-orders a{
-       text-align: center;
-       display: block;
-       margin: 1rem auto;
-       color: #7380ec ;
-   }
-   
-   /* POTANG INAA MOOOO LOG IN TRACKER  */
-   
-   main .tracker{
-       margin-top: 1rem;
-   }
-   
-   main .tracker  h2 {
-       margin-bottom: 0.8rem;
-   }
-   
-   main .tracker table{
-       background:rgba(250, 250, 550, 0.8);
-       width: 100%;
-       border-radius: 2rem;
-       padding: 1.8rem;
-       text-align: center;
-       box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
-       /* transition: all 300ms ease; */
-   }
-   
-   
-   main .tracker table:hover{
-       box-shadow: none;
-   }
-   
-   main table tbody td{
-       height: 2.8rem ;
-       border-bottom: 1px solid grey;
-       color: #677483;
-   }
-   
-   main table tbody tr:last-child{
-       border: none
-   }
-   
-   main .tracker a{
-       text-align: center;
-       display: block;
-       margin: 1rem auto;
-       color: #7380ec ;
-   }
-   
-   .warning{
-       color: Red ;
-   }
-   
-   .primary{ 
-       color: #7380ec;
-   }
-   
-   /* PROFILE PICS  */
-   .profile-photo img{
-       border-radius: 50%;
-       height: 40px;
-       width: 40px;
-   }
-   
-   /* RIGHT SIDE  */
-    .right{
-       margin-top: 1.4rem;
+    <!-- Main Content Area -->
+    <main>
+      <!-- Dashboard Content -->
+      <div v-if="currentPage === 'dashboard'">
+        <div class="dash-header">
+          <h1>{{ pageTitles[currentPage] }}</h1>
+          <div class="date">
+            <input type="date" v-model="currentDate">
+          </div>
+        </div>
+
+        <!-- Account Summary Cards -->
+        <div class="insights">
+          <div class="card balance">
+            <span class="material-icons">account_balance_wallet</span>
+            <div class="card-content">
+              <h3>Balance</h3>
+              <h1>${{ balanceData.amount }}</h1>
+              <small>{{ balanceData.info }}</small>
+            </div>
+          </div>
+
+          <div class="card income">
+            <span class="material-icons">trending_up</span>
+            <div class="card-content">
+              <h3>Income</h3>
+              <h1>${{ incomeData.amount }}</h1>
+              <small>{{ incomeData.info }}</small>
+            </div>
+          </div>
+
+          <div class="card expenses">
+            <span class="material-icons">credit_card</span>
+            <div class="card-content">
+              <h3>Expenses</h3>
+              <h1>${{ expensesData.amount }}</h1>
+              <small>{{ expensesData.info }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History Preview -->
+        <section class="recent-logs">
+          <h2>Transaction History</h2>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(transaction, index) in transactions" :key="index">
+                  <td>${{ transaction.amount }}</td>
+                  <td>{{ transaction.date }}</td>
+                  <td>{{ transaction.time }}</td>
+                  <td :class="transaction.status === 'Transaction Complete' ? 'success' : 'failed'">
+                    {{ transaction.status }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <a href="#" @click.prevent="setActivePage('history')" class="view-all">View All Transactions</a>
+        </section>
+      </div>
+
+      <!-- History Content -->
+      <history-component v-if="currentPage === 'history'" />
+
+      <!-- Profile Content -->
+      <profile 
+        v-if="currentPage === 'profile'" 
+        :currentDate="currentDate"
+        :pageTitles="pageTitles"
+        :currentPage="currentPage"
+        :userName="userName"
+        @update-user-name="updateUserName"
+      />
+
+      <!-- Game Content -->
+      <game-component 
+        v-if="currentPage === 'game'" 
+        :currentDate="currentDate"
+      />
+
+      <!-- Help & Support Content -->
+      <help-support v-if="currentPage === 'help'" :currentDate="currentDate" />
+    </main>
+
+    <!-- Right Panel -->
+    <aside id="right-panel" :class="{ 'show-right': isRightPanelOpen }">
+      <div class="top-bar">
+        <button id="menu-btn" class="menu-toggle" @click="openSidebar">
+          <span class="material-icons">menu</span>
+        </button>
+        
+        <div class="profile">
+          <div class="info">
+            <p>Hey, <b>{{ userName }}</b></p>
+            <small>{{ accountType }}</small>
+          </div>
+          <div class="profile-photo">
+            <span class="material-icons">account_circle</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wallet Summary / Game Stats depending on page -->
+      <section class="wallet-summary">
+        <h2>{{ currentPage === 'game' ? 'Game Stats' : 'Wallet' }}</h2>
+        <div class="wallet-card">
+          <div class="card-header">
+            <h3>{{ currentPage === 'game' ? 'Gaming Balance' : 'User Account' }}</h3>
+            <span class="material-icons">{{ currentPage === 'game' ? 'stars' : 'credit_card' }}</span>
+          </div>
+          <div class="card-balance">
+            <h1>${{ currentPage === 'game' ? gameBalance : walletBalance }}</h1>
+            <p>{{ currentPage === 'game' ? 'Available for Games' : 'Available Balance' }}</p>
+          </div>
+          <div class="card-actions">
+            <button class="action-btn" @click="addMoney">
+              <span class="material-icons">add</span>
+              Add {{ currentPage === 'game' ? 'Funds' : 'Money' }}
+            </button>
+            <button v-if="currentPage !== 'game'" class="action-btn" @click="sendMoney">
+              <span class="material-icons">send</span>
+              Send
+            </button>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</template>
+
+<script>
+import HistoryComponent from './History.vue';
+import HelpSupport from './HelpSupport.vue';
+import Profile from './Profile.vue';
+import GameComponent from './Game.vue';
+
+export default {
+  name: 'UserDashboard',
+  components: {
+    HistoryComponent,
+    HelpSupport,
+    Profile,
+    GameComponent
+  },
+  data() {
+    return {
+      isSidebarOpen: false,
+      isRightPanelOpen: false,
+      currentPage: 'dashboard',
+      currentDate: new Date().toISOString().split('T')[0],
+      userName: 'Phoenix User',
+      accountType: 'Premium Account',
+      walletBalance: '8,965.25',
+      gameBalance: '2,450.00', // Added game balance for game stats
+      balanceData: {
+        amount: '10,864.75',
+        info: 'Last updated 24h ago'
+      },
+      incomeData: {
+        amount: '2,450.00',
+        info: '+15% from last month'
+      },
+      expensesData: {
+        amount: '1,250.50',
+        info: '-3% from last month'
+      },
+      pageTitles: {
+        dashboard: 'Dashboard',
+        profile: 'User Profile',
+        game: 'Game Center',
+        history: 'Transaction History',
+        help: 'Help & Support',
+        logout: 'Logout'
+      },
+      transactions: [
+        { amount: '101.50', date: '04/15/25', time: '11:00 PM', status: 'Transaction Complete' },
+        { amount: '102.75', date: '04/15/25', time: '10:45 PM', status: 'Transaction Complete' },
+        { amount: '103.25', date: '04/14/25', time: '02:30 PM', status: 'Transaction Failed' },
+        { amount: '104.00', date: '04/12/25', time: '09:15 AM', status: 'Transaction Failed' },
+        { amount: '105.50', date: '04/10/25', time: '03:20 PM', status: 'Transaction Complete' }
+      ]
+    };
+  },
+  methods: {
+    openSidebar() {
+      this.isSidebarOpen = true;
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false;
+    },
+    toggleRightPanel() {
+      this.isRightPanelOpen = !this.isRightPanelOpen;
+    },
+    setActivePage(page) {
+      this.currentPage = page;
+      if (window.innerWidth <= 768) {
+        this.closeSidebar();
+      }
+    },
+    logout() {
+      alert('Logging out...');
+      // In a real application, you would handle the logout logic here
+    },
+    addMoney() {
+      if (this.currentPage === 'game') {
+        alert('Add Funds to Game Account functionality will be implemented here');
+      } else {
+        alert('Add Money functionality will be implemented here');
+      }
+    },
+    sendMoney() {
+      alert('Send Money functionality will be implemented here');
+    },
+    updateUserName(newName) {
+      this.userName = newName;
+    },
+    initializeButtonEffects() {
+      const allButtons = document.querySelectorAll('button');
+      
+      allButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          this.style.transform = 'scale(0.95)';
+          
+          setTimeout(() => {
+            this.style.transform = 'scale(1)';
+          }, 100);
+        });
+      });
     }
-   
-    .right .top{
-       display: flex; 
-       justify-content: end;
-       gap: 2rem;
-       /* background-color; */
-    }
-   
-    .right .top button{
-       display: none;
-    }
+  },
+  mounted() {
+    this.initializeButtonEffects();
     
-    
-    .right .top .profile{
-       display: flex;
-       gap: 2rem;
-       text-align: right;
-    }
-   
-   /* =================Media Queries ======================= */
-   /* tabble mode  */
-   @media screen and (max-width: 1200px) {
-   
-       .container{
-           width: 94%;
-           grid-template-columns: 5rem auto;
-       }
-       aside{ 
-           position: fixed;
-           width: 6rem;
-       }
-   
-       aside .logo h2{
-           display: none;
-       }
-   
-       aside .sidebar h3{
-           display: none;
-       }
-   
-       aside .sidebar a {
-           width: 5.6rem;
-       }
-   
-       aside .sidebar a:last-child{
-           position: absolute;
-           bottom:0px;
-       }
-   
-       main .insights{
-           grid-template-columns: 1fr;
-           gap: 0;
-       }
-   
-       main .recent-orders {
-           width: 100%;
-           position: relative; 
-           left: auto; 
-           transform: none; 
-           margin: 2rem 0 0 0; 
-       }
-   
-       main .recent-orders table{
-           width: 100%;
-       }
-   
-       
-   
-       main .tracker{
-           width: 100%;
-           position: relative; 
-           left: auto; 
-           transform: none; 
-           margin: 2rem 0 0 0; 
-       }
-       main .tracker table{
-           width: 100%;
-       }
-   
-   
-       main table thead tr th:last-child,
-       main table thead tr th:first-child {
-       display: none;
-   
-       }
-   
-       main table tbody tr td:last-child,
-       main table tbody tr td:first-child {
-       display: none;
-   }
-   
-   /* mobile */
-   /* ==========================MOBILE ====================== */
-   @media screen  and (max-width: 768px) {
-       .container {
-           width: 100%;
-           grid-template-columns: 1fr;
-       }
-   
-   
-       aside {
-           position: fixed;
-           left: 0;
-           top: 0;
-           width: 18rem;
-           height: 100vh;
-           background: rgba(250, 240, 540, 0.3);
-           backdrop-filter: blur(9px);
-           transform: translateX(-100%); /* Hide by default */
-           z-index: 3;
-       }
-       
-       aside.show {
-           transform: translateX(0); /* Slide into view */
-       }
-   
-   @keyframes showMenu {
-       to {
-           left: 0;
-       }
-   }
-   
-       aside .logo {
-           margin-left: 1rem;   
-       }
-   
-       aside .logo h2{
-           display: inline;
-       }
-       aside .sidebar  h3{
-           display: inline;
-       }
-   
-       aside .sidebar a{
-           width: 100%;
-           height: 3.4rem;
-       }
-   
-       aside .sidebar a:last-child{
-          position: absolute;
-          bottom: 0;
-       }
-   
-       aside .close{
-           display: inline-block;
-           cursor: pointer;
-       }
-       main {
-           margin-top: 8rem;
-           padding: 0 1rem;
-       }
-   
-       main{ 
-           grid-column: 1;
-       
-       }
-   
-       main .recent-orders{
-           position: relative;
-           margin: 3rem 0 0 0;
-           width: 100%;
-       }
-   
-       main .recent-orders table{ 
-           width: 100%;
-           margin: 0;
-       }
-   
-       main .tracker{
-           position: relative;
-           margin: 3rem 0 0 0;
-           width: 100%;
-       }
-   
-       main .tracker table{ 
-           width: 100%;
-           margin: 0;
-       }
-   
-   
-   
-   
-   
-       .right {
-           width: 94%;
-           margin: 0 auto 4rem;
-       }
-   
-       .right .top{
-           position: fixed;
-           top: 0;
-           left: 0; 
-           align-items: center;
-           padding: 0 0.8rem;
-           height: 4.6rem;
-           background: rgb(248, 248, 248);
-           width: 100%;
-           margin: 0;
-           z-index: 2;
-           box-shadow:  0 1rem 1rem rgb(194, 216, 226);
-       }
-   
-       .right .top .theme-toggler{
-           width: 4.4rem;
-           position: absolute;
-           left: 66%;
-       }
-   
-       .right .profile .info{
-           display: none;
-       }
-   
-       .right .top button{
-           display: inline-block;
-           background: transparent;
-           cursor: pointer;
-           color: rgb(9, 5, 5);
-           position: absolute;
-           left: 1rem;
-       }
-   
-       .right .top button span {
-           font-size: 2rem;
-   
-       }
-   }
-   }
-   
-   </style>
+    // Add event listener for window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        this.isSidebarOpen = false;
+      }
+      if (window.innerWidth > 640) {
+        this.isRightPanelOpen = false;
+      }
+    });
+  }
+};
+</script>
+  
+<style>
+/* Base Styles & Variables */
+:root {
+  --color-primary: #ff5722;
+  --color-primary-light: #ff9800;
+  --color-white: #fff;
+  --color-dark: #333;
+  --color-dark-variant: #555;
+  --color-light: #f0f0f0;
+  --color-light-variant: #f8f9fa;
+  --color-success: #28a745;
+  --color-danger: #dc3545;
+  --card-padding: 14px;
+  --border-radius: 6px;
+  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --transition: all 0.2s ease;
+  --sidebar-width: 200px;
+  --sidebar-width-collapsed: 60px;
+  --right-panel-width: 260px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-light-variant);
+  color: var(--color-dark);
+}
+
+/* Container Layout - Modified to use 1fr for center content */
+.container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar Styles */
+#sidebar {
+  background-color: var(--color-white);
+  box-shadow: var(--box-shadow);
+  height: 100vh;
+  position: fixed;
+  width: var(--sidebar-width);
+  z-index: 20;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid var(--color-light);
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+}
+
+.logo img {
+  width: 100px;
+  height: 100px;
+  margin-left: 30px;
+  object-fit: contain;
+}
+
+.close-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-dark-variant);
+}
+
+.sidebar-nav {
+  padding: 8px 0;
+  flex-grow: 1;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  color: var(--color-dark-variant);
+  text-decoration: none;
+  transition: var(--transition);
+  border-radius: 4px;
+  margin: 2px 6px;
+}
+
+.sidebar-nav a.active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.sidebar-nav a:hover:not(.active) {
+  background-color: var(--color-light);
+}
+
+.sidebar-nav .material-icons {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.sidebar-nav h3 {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Main Content Styles - Updated to maximize space */
+main {
+  position: fixed;
+  left: var(--sidebar-width);
+  right: var(--right-panel-width);
+  top: 0;
+  bottom: 0;
+  background-color: var(--color-white);
+  box-shadow: var(--box-shadow);
+  padding: var(--card-padding);
+  overflow-y: auto;
+  height: 100vh;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.date {
+  background-color: var(--color-light-variant);
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.date input {
+  border: none;
+  background: transparent;
+  color: var(--color-dark-variant);
+  cursor: pointer;
+}
+
+/* Card Layout */
+.insights {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background-color: var(--color-white);
+  padding: var(--card-padding);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  border: 1px solid var(--color-light);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card .material-icons {
+  font-size: 22px;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+
+.card h3 {
+  color: var(--color-dark-variant);
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.card h1 {
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.card small {
+  color: var(--color-dark-variant);
+  font-size: 0.7rem;
+}
+
+/* Table Styles */
+.recent-logs {
+  margin-top: 20px;
+}
+
+.recent-logs h2 {
+  margin-bottom: 10px;
+  color: var(--color-dark);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-light);
+  border-radius: var(--border-radius);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  background-color: var(--color-light-variant);
+}
+
+th {
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--color-dark-variant);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+td {
+  padding: 8px 10px;
+  color: var(--color-dark-variant);
+  border-top: 1px solid var(--color-light);
+  font-size: 0.8rem;
+}
+
+tbody tr:hover {
+  background-color: var(--color-light-variant);
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.failed {
+  color: var(--color-danger);
+}
+
+.view-all {
+  display: block;
+  text-align: center;
+  color: var(--color-primary);
+  margin-top: 10px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+/* Right Panel Styles */
+#right-panel {
+  background-color: var(--color-white);
+  box-shadow: var(--box-shadow);
+  height: 100vh;
+  position: fixed;
+  width: var(--right-panel-width);
+  right: 0;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--color-light);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info p {
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.info small {
+  color: var(--color-dark-variant);
+  font-size: 0.7rem;
+}
+
+.profile-photo .material-icons {
+  font-size: 28px;
+  color: var(--color-primary);
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-dark-variant);
+}
+
+/* Wallet Card Styles */
+.wallet-summary {
+  padding: var(--card-padding);
+  flex-grow: 1;
+}
+
+.wallet-summary h2 {
+  margin-bottom: 10px;
+  color: var(--color-dark);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.wallet-card {
+  background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
+  color: var(--color-white);
+  padding: var(--card-padding);
+  border-radius: var(--border-radius);
+  margin-bottom: 14px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-header h3 {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.card-balance {
+  margin-bottom: 14px;
+}
+
+.card-balance h1 {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.card-balance p {
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.75rem;
+}
+
+.action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.action-btn .material-icons {
+  font-size: 14px;
+}
+
+/* Responsive Styles - Updated for better content area sizing */
+@media screen and (max-width: 1200px) {
+  :root {
+    --sidebar-width: var(--sidebar-width-collapsed);
+    --right-panel-width: 240px;
+  }
+
+  .container {
+    grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
+  }
+  
+  main {
+    width: calc(100vw - var(--sidebar-width) - var(--right-panel-width));
+  }
+
+  .sidebar-nav h3 {
+    display: none;
+  }
+
+  .logo img {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+  }
+
+  .insights {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .insights {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --sidebar-width: 0;
+  }
+  
+  .container {
+    grid-template-columns: 1fr var(--right-panel-width);
+  }
+
+  main {
+    margin-left: 0;
+    width: calc(100vw - var(--right-panel-width));
+  }
+
+  #sidebar {
+    left: -100%;
+    width: 200px;
+    transition: var(--transition);
+  }
+
+  #sidebar.show {
+    left: 0;
+  }
+
+  .sidebar-nav h3 {
+    display: inline;
+  }
+
+  .logo img {
+    width: 100px;
+    height: 60px;
+  }
+
+  .close-btn {
+    display: inline-block;
+  }
+
+  .menu-toggle {
+    display: inline-block;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  :root {
+    --right-panel-width: 0;
+  }
+  
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  main {
+    margin-right: 0;
+    margin-top: 50px;
+    height: calc(100vh - 50px);
+    width: 100vw;
+  }
+
+  #right-panel {
+    right: -100%;
+    width: 200px;
+    transition: var(--transition);
+  }
+
+  #right-panel.show-right {
+    right: 0;
+  }
+
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 89;
+    height: 50px;
+    background-color: var(--color-white);
+  }
+
+  .insights {
+    grid-template-columns: 1fr;
+  }
+
+  .info {
+    display: none;
+  }
+
+  .dash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .date {
+    width: 100%;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
