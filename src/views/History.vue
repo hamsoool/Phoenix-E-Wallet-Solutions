@@ -470,7 +470,7 @@
   }
   
   .btn-export:hover {
-    background: var(--color-primary-variant);
+    background-color: rgb(233, 30, 7);
   }
   
   .transaction-details {

@@ -149,7 +149,7 @@ export default {
 }
 
 .play-btn:hover {
-  background-color: var(--color-primary-light);
+  background-color: rgb(233, 30, 7);
 }
 
 .filter select {

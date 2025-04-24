@@ -174,131 +174,7 @@ export default {
 </script>
 
 <style scoped>
-/* Base Styles & Variables */
-:root {
-  --color-primary: #ff5722;
-  --color-primary-light: #ff9800;
-  --color-white: #fff;
-  --color-off-white: #fcfcfc; /* Slightly off-white for main content */
-  --color-background: #f5f7fa; /* Light gray-blue for overall background */
-  --color-dark: #333;
-  --color-dark-variant: #555;
-  --color-light: #eef1f6; /* Updated to match new color scheme */
-  --color-light-variant: #f8f9fa;
-  --color-success: #28a745;
-  --color-danger: #dc3545;
-  --card-padding: 14px;
-  --border-radius: 6px;
-  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --transition: all 0.2s ease;
-  --sidebar-width: 200px;
-  --sidebar-width-collapsed: 60px;
-  --right-panel-width: 260px;
-}
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  background-color: var(--color-background); /* Updated background color */
-  color: var(--color-dark);
-}
-
-/* Container Layout - Modified to use 1fr for center content */
-.container {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Sidebar Styles */
-#sidebar {
-  background-color: var(--color-off-white);
-  box-shadow: var(--box-shadow);
-  height: 100vh;
-  position: fixed;
-  width: var(--sidebar-width);
-  z-index: 20;
-  left: 0;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-/* Main Content Styles - Updated to maximize space */
-main {
-  position: fixed;
-  left: var(--sidebar-width);
-  right: var(--right-panel-width);
-  top: 0;
-  bottom: 0;
-  background-color: var(--color-off-white); /* Updated to off-white for main content */
-  box-shadow: var(--box-shadow);
-  padding: var(--card-padding);
-  overflow-y: auto;
-  height: 100vh;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-/* Card Layout */
-.card {
-  background-color: var(--color-white); /* Pure white for cards for contrast */
-  padding: var(--card-padding);
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Slightly stronger shadow for cards */
-  transition: var(--transition);
-  border: 1px solid var(--color-light);
-}
-
-/* Table Styles */
-.table-wrapper {
-  overflow-x: auto;
-  border: 1px solid var(--color-light);
-  border-radius: var(--border-radius);
-  background-color: var(--color-white); /* Pure white for tables */
-}
-
-thead tr {
-  background-color: var(--color-light); /* Slightly darker for header */
-}
-
-/* Right Panel Styles */
-#right-panel {
-  background-color: var(--color-off-white);
-  box-shadow: var(--box-shadow);
-  height: 100vh;
-  position: fixed;
-  width: var(--right-panel-width);
-  right: 0;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-/* Wallet Card Styles - Keep the gradient to make it stand out */
-.wallet-card {
-  background: linear-gradient(to right, var(--color-primary), var(--color-primary-light));
-  color: var(--color-white);
-  padding: var(--card-padding);
-  border-radius: var(--border-radius);
-  margin-bottom: 14px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Enhanced shadow for wallet card */
-}
 /* Help & Support Specific Styles - Minimal Design */
 .support-container {
   display: grid;
@@ -445,7 +321,7 @@ h3 {
 }
 
 .btn-submit:hover {
-  background: var(--color-primary-variant);
+  background-color: rgb(233, 30, 7);
   transform: translateY(-1px);
 }
 

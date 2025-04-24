@@ -299,7 +299,7 @@ export default {
 :root {
   --color-primary: #ff5722;
   --color-primary-light: #ff9800;
-  --color-white: #fff;
+  --color-white: #f4f3f3;
   --color-dark: #333;
   --color-dark-variant: #555;
   --color-light: #f0f0f0;
@@ -370,9 +370,9 @@ body {
 }
 
 .logo img {
-  width: 100px;
-  height: 100px;
-  margin-left: 30px;
+  width: 100%;
+  height: auto;
+  margin-left: 0px;
   object-fit: contain;
 }
 

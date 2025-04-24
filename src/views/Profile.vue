@@ -388,7 +388,7 @@ export default {
 }
 
 .btn-save:hover {
-  background: var(--color-primary-variant);
+  background-color: rgb(233, 30, 7);
 }
 
 .verification-badge {
