@@ -1,11 +1,6 @@
 <template>
   <div>
-    <div class="dash-header">
-      <h1>Help & Support</h1>
-      <div class="date">
-        <input type="date" :value="currentDate" @input="$emit('update:currentDate', $event.target.value)">
-      </div>
-    </div>
+    
 
     <div class="support-container">
       <!-- FAQ Section -->
