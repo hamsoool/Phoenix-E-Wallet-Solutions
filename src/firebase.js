@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAyubn_JmJWVYoqer3F48WUopqZFv1Z9f4",
+    apiKey: "",
     authDomain: "phoenix-e-wallet.firebaseapp.com",
     projectId: "phoenix-e-wallet",
     storageBucket: "phoenix-e-wallet.firebasestorage.app",
