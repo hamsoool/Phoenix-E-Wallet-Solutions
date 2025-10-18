@@ -6,12 +6,17 @@
         <div class="profile-avatar">
           <span class="material-icons" v-if="!avatarSrc">account_circle</span>
           <img v-if="avatarSrc" :src="avatarSrc" class="user-avatar" alt="User Profile Photo">
-          <div class="avatar-edit" @click="handleAvatarEdit">
-            <span class="material-icons">edit</span>
-          </div>
         </div>
         <h2 class="profile-name">{{ personalInfo.firstName }} {{ personalInfo.lastName }}</h2>
-        <p class="profile-status">{{ membershipStatus }}</p>
+        <p class="profile-status"
+           :class="{
+             'status-regular': membershipStatus === 'Regular Member',
+             'status-half': membershipStatus === 'Half-Winged Phoenix',
+             'status-phoenix': membershipStatus === 'Phoenix'
+           }"
+        >
+          {{ membershipStatus }}
+        </p>
       </div>
 
       <!-- Face Recognition Registration -->
@@ -24,6 +29,7 @@
           <div class="video-container" v-show="isCameraActive">
             <video ref="video" class="face-video" autoplay playsinline></video>
             <canvas ref="canvas" class="face-canvas" width="640" height="480"></canvas>
+            <div class="face-guide-oval"></div>
           </div>
           <div class="face-status" :class="{'face-registered': faceRegistered}">
             <span class="material-icons">{{ faceRegistered ? 'check_circle' : 'face' }}</span>
@@ -66,30 +72,9 @@
             <span class="progress-text">{{ registrationProgress }}% Complete</span>
           </div>
           <div class="face-instructions" v-if="isCameraActive">
-            <p>Please center your face in the camera and ensure good lighting.</p>
-            <p>We'll need to capture 5 different angles of your face. Follow the prompts below:</p>
-            <ul>
-              <li :class="{ 'completed': capturedPositions.includes('front') }">
-                <span class="material-icons">{{ capturedPositions.includes('front') ? 'check_circle' : 'circle' }}</span>
-                Look directly at the camera (front)
-              </li>
-              <li :class="{ 'completed': capturedPositions.includes('left') }">
-                <span class="material-icons">{{ capturedPositions.includes('left') ? 'check_circle' : 'circle' }}</span>
-                Turn slightly to your left
-              </li>
-              <li :class="{ 'completed': capturedPositions.includes('right') }">
-                <span class="material-icons">{{ capturedPositions.includes('right') ? 'check_circle' : 'circle' }}</span>
-                Turn slightly to your right
-              </li>
-              <li :class="{ 'completed': capturedPositions.includes('up') }">
-                <span class="material-icons">{{ capturedPositions.includes('up') ? 'check_circle' : 'circle' }}</span>
-                Tilt your head slightly up
-              </li>
-              <li :class="{ 'completed': capturedPositions.includes('down') }">
-                <span class="material-icons">{{ capturedPositions.includes('down') ? 'check_circle' : 'circle' }}</span>
-                Tilt your head slightly down
-              </li>
-            </ul>
+            <p style="margin-bottom:0.5rem;font-size:0.95rem;font-weight:500;color:#333;text-align:center;">
+              Please center your face in the camera and ensure good lighting.
+            </p>
           </div>
         </div>
       </div>
@@ -133,6 +118,34 @@
             </div>
           </div>
           <div class="form-row">
+            <div class="form-group" :class="{'has-error': formErrors.collegeYear}" style="flex:1;">
+              <label for="college-year">College Year</label>
+              <select id="college-year" v-model="personalInfo.collegeYear" class="profile-input" required>
+                <option value="" disabled>Select College Year</option>
+                <option value="1st">1st Year</option>
+                <option value="2nd">2nd Year</option>
+                <option value="3rd">3rd Year</option>
+                <option value="4th">4th Year</option>
+              </select>
+              <span v-if="formErrors.collegeYear" class="error-message">{{ formErrors.collegeYear }}</span>
+            </div>
+            <div class="form-group" :class="{'has-error': formErrors.block}" style="flex:1;">
+              <label for="block">Block</label>
+              <input
+                id="block"
+                type="text"
+                class="profile-input"
+                placeholder="A-F"
+                v-model="personalInfo.block"
+                maxlength="1"
+                pattern="[A-F]"
+                @input="onBlockInput"
+                required
+              >
+              <span v-if="formErrors.block" class="error-message">{{ formErrors.block }}</span>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group" :class="{'has-error': formErrors.studentId}">
               <label for="student-id">Student ID</label>
               <input 
@@ -147,7 +160,19 @@
             </div>
             <div class="form-group">
               <label for="dob">Date of Birth</label>
-              <input type="date" id="dob" v-model="personalInfo.dob">
+              <div class="date-picker-container">
+                <input
+                  type="date"
+                  id="dob"
+                  v-model="personalInfo.dob"
+                  class="date-input"
+                  :class="{'input-error': formErrors.dob}"
+                  :max="new Date().toISOString().split('T')[0]"
+                  :min="'1900-01-01'"
+                  @change="validateDob"
+                />
+                <span v-if="formErrors.dob" class="error-message">{{ formErrors.dob }}</span>
+              </div>
             </div>
           </div>
           <div class="form-row">
@@ -197,6 +222,79 @@
               <span v-if="formErrors.phone" class="error-message">{{ formErrors.phone }}</span>
             </div>
           </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input
+                type="password"
+                id="password"
+                value="********"
+                class="profile-input"
+                disabled
+                style="flex: 1;"
+              />
+              <button type="button" class="btn-secondary" @click="showPasswordEdit = !showPasswordEdit">
+                <span class="material-icons">{{ showPasswordEdit ? 'close' : 'edit' }}</span>
+                {{ showPasswordEdit ? 'Cancel' : 'Change' }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Password change form -->
+          <div v-if="showPasswordEdit" class="password-change-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="old-password">Current Password</label>
+                <input 
+                  type="password" 
+                  id="old-password" 
+                  v-model="passwordForm.oldPassword"
+                  placeholder="Enter your current password"
+                  :class="{'input-error': passwordError}"
+                >
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input 
+                  type="password" 
+                  id="new-password" 
+                  v-model="passwordForm.newPassword"
+                  placeholder="Enter your new password"
+                  :class="{'input-error': passwordError}"
+                >
+              </div>
+              <div class="form-group">
+                <label for="confirm-password">Confirm New Password</label>
+                <input 
+                  type="password" 
+                  id="confirm-password" 
+                  v-model="passwordForm.confirmPassword"
+                  placeholder="Confirm your new password"
+                  :class="{'input-error': passwordError}"
+                >
+              </div>
+            </div>
+            <div v-if="passwordError" class="error-message" style="margin-top: 10px;">
+              {{ passwordError }}
+            </div>
+            <div v-if="passwordSuccess" class="success-message" style="margin-top: 10px;">
+              {{ passwordSuccess }}
+            </div>
+            <div class="form-actions">
+              <button 
+                type="button" 
+                class="btn-save" 
+                @click="handleChangePassword"
+                :disabled="isChangingPassword"
+              >
+                <span v-if="isChangingPassword" class="loading-spinner"></span>
+                <span v-else class="material-icons">lock</span>
+                {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
+              </button>
+            </div>
+          </div>
           
           <div class="form-actions">
             <button 
@@ -213,18 +311,41 @@
         </form>
       </div>
     </div>
+
+    <!-- Add this at the end of your template, with other modals -->
+    <div class="modal-overlay" v-if="showFaceSuccessModal">
+      <div class="modal-container">
+        <div class="modal-content">
+          <div class="modal-icon">
+            <i class='bx bx-check-circle'></i>
+          </div>
+          <h3>Face Registered!</h3>
+          <p>Your face has been registered successfully for login.</p>
+          <div class="modal-buttons">
+            <button class="modal-button confirm" @click="showFaceSuccessModal = false">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { getAuth, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { getAuth, updateProfile, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { app } from '../firebase';
 import * as faceapi from 'face-api.js';
+import { Calendar } from 'v-calendar';
+import 'v-calendar/style.css';
 
 export default {
   name: 'Profile',
+  components: {
+    Calendar
+  },
   props: {
     currentDate: {
       type: String,
@@ -255,14 +376,18 @@ export default {
         dob: '',
         email: '',
         phone: '',
-        avatarUrl: ''
+        avatarUrl: '',
+        collegeYear: '',
+        block: '',
+        createdAt: ''
       },
       formErrors: {
         firstName: '',
         lastName: '',
-        studentId: '',
         email: '',
-        phone: ''
+        phone: '',
+        studentId: '',
+        dob: ''
       },
       showSuccessMessage: false,
       isSubmitting: false,
@@ -276,7 +401,32 @@ export default {
       capturedPositions: [],
       stream: null,
       emailVerified: false,
-      verificationEmailSent: false
+      verificationEmailSent: false,
+      isUploadingAvatar: false,
+      showSizeLimit: false,
+      isAdmin: false,
+      showPasswordEdit: false,
+      passwordForm: {
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      },
+      passwordError: '',
+      passwordSuccess: '',
+      isChangingPassword: false,
+      calendarAttributes: [
+        {
+          key: 'today',
+          highlight: {
+            color: 'red',
+            fillMode: 'light',
+          },
+          dates: new Date(),
+        },
+      ],
+      showCalendar: false,
+      dobDate: null,
+      showFaceSuccessModal: false,
     }
   },
   async created() {
@@ -298,6 +448,9 @@ export default {
     await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
     await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
     await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+
+    // Load user avatar
+    await this.loadUserAvatar();
   },
   methods: {
     async loadUserData() {
@@ -307,11 +460,14 @@ export default {
           console.error('No user logged in');
           return;
         }
+        await user.reload();
 
         // Get user data from Firestore
         const userDoc = await getDoc(doc(this.db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          
+          // Update personalInfo with data from Firestore
           this.personalInfo = {
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
@@ -319,13 +475,52 @@ export default {
             dob: userData.dob || '',
             email: user.email || '',
             phone: userData.phone || '',
-            avatarUrl: userData.avatarUrl || ''
+            avatarUrl: userData.avatarUrl || '',
+            collegeYear: userData.collegeYear || '',
+            block: userData.block || '',
+            createdAt: userData.createdAt || ''
           };
+
+          // Set original data for change tracking
+          this.originalPersonalInfo = JSON.parse(JSON.stringify(this.personalInfo));
+          
+          // Defensive fix for dobDate
+          if (userData.dob) {
+            const d = new Date(userData.dob);
+            this.personalInfo.dob = userData.dob;
+            this.dobDate = isNaN(d.getTime()) ? null : d;
+          } else {
+            this.dobDate = null;
+          }
+          
+          // Check if face descriptor exists
+          if (userData.faceDescriptor) {
+            this.faceRegistered = true;
+          }
           
           // Load avatar if exists
           if (userData.avatarUrl) {
             this.avatarSrc = userData.avatarUrl;
+          } else {
+            this.avatarSrc = null;
           }
+
+          // Set isAdmin state
+          this.isAdmin = userData.isAdmin === true;
+
+          // Set membership status
+          if (userData.isPaid === true && userData.paymentType === 'fullYear') {
+            this.membershipStatus = 'Phoenix';
+          } else if (userData.isPaid === true && userData.paymentType === 'semestral') {
+            this.membershipStatus = 'Half-Winged Phoenix';
+          } else {
+            this.membershipStatus = 'Regular Member';
+          }
+
+          // Log the loaded data for debugging
+          console.log('Loaded user data:', this.personalInfo);
+        } else {
+          console.error('No user document found in Firestore');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -333,123 +528,89 @@ export default {
     },
 
     async savePersonalInfo() {
-      this.isSubmitting = true;
-      this.formErrors = {};
-
       try {
+        // Validate all fields including DOB
+        if (!this.validateDob()) {
+          return;
+        }
+        
+        this.isSubmitting = true;
         const user = this.auth.currentUser;
         if (!user) throw new Error('No user logged in');
 
-        // Validate form
-        this.validateForm();
-        if (Object.keys(this.formErrors).length > 0) {
-          throw new Error('Please fix the form errors');
-        }
-
-        // Update user profile in Firebase Auth
-        await updateProfile(user, {
-          displayName: `${this.personalInfo.firstName} ${this.personalInfo.lastName}`
-        });
-
-        // Update user data in Firestore
-        await updateDoc(doc(this.db, "users", user.uid), {
+        // Update Firestore
+        await updateDoc(doc(this.db, 'users', user.uid), {
           firstName: this.personalInfo.firstName,
           lastName: this.personalInfo.lastName,
           studentId: this.personalInfo.studentId,
           dob: this.personalInfo.dob,
-          phone: this.personalInfo.phone,
-          updatedAt: new Date().toISOString()
+          phone: this.personalInfo.phone
         });
 
-        this.showSuccessMessage = true;
+        // Update original data
+        this.originalPersonalInfo = JSON.parse(JSON.stringify(this.personalInfo));
         this.hasChanges = false;
+
+        // Show success message
+        this.showSuccessMessage = true;
         setTimeout(() => {
           this.showSuccessMessage = false;
         }, 3000);
 
       } catch (error) {
         console.error('Error saving profile:', error);
-        alert(error.message);
+        alert('Error saving profile. Please try again.');
       } finally {
         this.isSubmitting = false;
       }
     },
 
-    validateForm() {
-      // First Name validation
-      if (!this.personalInfo.firstName) {
-        this.formErrors.firstName = 'First name is required';
+    validateDob() {
+      if (!this.personalInfo.dob) {
+        this.formErrors.dob = 'Date of birth is required';
+        return false;
       }
-
-      // Last Name validation
-      if (!this.personalInfo.lastName) {
-        this.formErrors.lastName = 'Last name is required';
+      
+      const dob = new Date(this.personalInfo.dob);
+      const today = new Date();
+      const minDate = new Date(1900, 0, 1);
+      
+      if (isNaN(dob.getTime())) {
+        this.formErrors.dob = 'Invalid date format';
+        return false;
       }
-
-      // Student ID validation
-      if (!this.personalInfo.studentId) {
-        this.formErrors.studentId = 'Student ID is required';
-      } else if (!/^\d{9}$/.test(this.personalInfo.studentId)) {
-        this.formErrors.studentId = 'Invalid format. Use Your Schoold ID (e.g. 202311165)';
+      
+      if (dob > today) {
+        this.formErrors.dob = 'Date of birth cannot be in the future';
+        return false;
       }
-
-      // Email validation
-      if (!this.personalInfo.email) {
-        this.formErrors.email = 'Email is required';
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.personalInfo.email)) {
-        this.formErrors.email = 'Invalid email format';
+      
+      if (dob < minDate) {
+        this.formErrors.dob = 'Date of birth cannot be before 1900';
+        return false;
       }
-
-      // Phone validation (Philippine format)
-      if (this.personalInfo.phone) {
-        // Accepts +63 9XX XXX XXXX or 09XX XXX XXXX (with or without spaces/dashes)
-        const phPhoneRegex = /^(?:\+63|0)9\d{2}[- ]?\d{3}[- ]?\d{4}$/;
-        if (!phPhoneRegex.test(this.personalInfo.phone)) {
-          this.formErrors.phone = 'Invalid phone number. Use +63 9XX XXX XXXX or 09XX XXX XXXX';
-        }
-      }
+      
+      this.formErrors.dob = '';
+      return true;
     },
 
-    async handleAvatarEdit() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          try {
-            const user = this.auth.currentUser;
-            if (!user) throw new Error('No user logged in');
+    async loadUserAvatar() {
+      try {
+        const auth = getAuth(app);
+        const user = auth.currentUser;
+        if (!user) return;
 
-            // Upload image to Firebase Storage
-            const storageRef = ref(this.storage, `avatars/${user.uid}`);
-            await uploadBytes(storageRef, file);
-            
-            // Get download URL
-            const downloadURL = await getDownloadURL(storageRef);
-            
-            // Update user profile in Firebase Auth
-            await updateProfile(user, {
-              photoURL: downloadURL
-            });
-
-            // Update user data in Firestore
-            await updateDoc(doc(this.db, "users", user.uid), {
-              avatarUrl: downloadURL
-            });
-
-            this.avatarSrc = downloadURL;
-            this.personalInfo.avatarUrl = downloadURL;
-
-          } catch (error) {
-            console.error('Error uploading avatar:', error);
-            alert('Error uploading avatar. Please try again.');
-          }
+        const db = getFirestore(app);
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        if (userDoc.exists() && userDoc.data().avatarUrl) {
+          this.avatarSrc = userDoc.data().avatarUrl;
+        } else {
+          this.avatarSrc = null;
         }
-      };
-
-      input.click();
+      } catch (error) {
+        console.error('Error loading avatar:', error);
+      }
     },
 
     // Face recognition methods
@@ -496,17 +657,28 @@ export default {
           await updateDoc(doc(this.db, "users", user.uid), {
             faceDescriptor: Array.from(detection.descriptor)
           });
-          alert('Face registered successfully!');
+          this.showFaceSuccessModal = true;
         }
       } else {
         alert('No face detected. Please try again.');
       }
     },
 
-    deleteFaceRegistration() {
-      this.faceRegistered = false;
-      this.registrationProgress = 0;
-      this.capturedPositions = [];
+    async deleteFaceRegistration() {
+      try {
+        const user = this.auth.currentUser;
+        if (user) {
+          await updateDoc(doc(this.db, "users", user.uid), {
+            faceDescriptor: null
+          });
+        }
+        this.faceRegistered = false;
+        this.registrationProgress = 0;
+        this.capturedPositions = [];
+      } catch (error) {
+        console.error('Error deleting face registration:', error);
+        alert('Error deleting face registration. Please try again.');
+      }
     },
 
     verifyPhone() {
@@ -569,7 +741,116 @@ export default {
       } catch (error) {
         alert('Failed to send verification email. Please try again.');
       }
-    }
+    },
+
+    async handleChangePassword() {
+      this.passwordError = '';
+      this.passwordSuccess = '';
+      this.isChangingPassword = true;
+      const { oldPassword, newPassword, confirmPassword } = this.passwordForm;
+
+      try {
+        // Validate inputs
+        if (!oldPassword || !newPassword || !confirmPassword) {
+          this.passwordError = 'Please fill in all password fields';
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          this.passwordError = 'New passwords do not match';
+          return;
+        }
+        
+        if (newPassword.length < 6) {
+          this.passwordError = 'Password must be at least 6 characters';
+          return;
+        }
+
+        const user = this.auth.currentUser;
+        if (!user || !user.email) {
+          console.error('User or user email not found', user);
+          this.passwordError = 'User not authenticated. Please log in again.';
+          return;
+        }
+
+        // Log for debugging
+        console.log('Attempting to reauthenticate user:', user.email);
+        
+        // Reauthenticate user before changing password
+        const credential = EmailAuthProvider.credential(user.email, oldPassword);
+        await reauthenticateWithCredential(user, credential);
+        
+        // Update password
+        await updatePassword(user, newPassword);
+        
+        // Success
+        this.passwordSuccess = 'Password updated successfully!';
+        this.passwordForm = {
+          oldPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        };
+        
+        // Close the password edit form after a delay
+        setTimeout(() => {
+          this.showPasswordEdit = false;
+          this.passwordSuccess = '';
+        }, 3000);
+      } catch (error) {
+        console.error('Password update error:', error);
+        if (error.code === 'auth/wrong-password') {
+          this.passwordError = 'Current password is incorrect';
+        } else {
+          this.passwordError = `Failed to update password: ${error.message}`;
+        }
+      } finally {
+        this.isChangingPassword = false;
+      }
+    },
+
+    onDayClick(day) {
+      this.dobDate = day.date;
+      this.personalInfo.dob = day.date.toISOString().split('T')[0];
+      this.showCalendar = false;
+    },
+    
+    // Add click outside handler to close calendar
+    handleClickOutside(event) {
+      const calendar = this.$el.querySelector('.custom-calendar');
+      const input = this.$el.querySelector('.date-input');
+      if (calendar && !calendar.contains(event.target) && !input.contains(event.target)) {
+        this.showCalendar = false;
+      }
+    },
+
+    onBlockInput(e) {
+      // Only allow uppercase A-F
+      let val = e.target.value.toUpperCase();
+      if (!/^[A-F]?$/.test(val)) {
+        val = val.replace(/[^A-F]/g, '');
+      }
+      this.personalInfo.block = val;
+      if (val && !/^[A-F]$/.test(val)) {
+        this.formErrors.block = 'Block must be a letter from A to F';
+      } else {
+        this.formErrors.block = '';
+      }
+    },
+
+    computedCollegeYear() {
+      // Compute the current college year based on registration year and current date
+      if (!this.personalInfo.collegeYear || !this.personalInfo.createdAt) return '';
+      const yearMap = ['1st', '2nd', '3rd', '4th'];
+      const regDate = new Date(this.personalInfo.createdAt);
+      const now = new Date();
+      let regYear = regDate.getFullYear();
+      let nowYear = now.getFullYear();
+      let diff = nowYear - regYear;
+      let idx = yearMap.indexOf(this.personalInfo.collegeYear) + diff;
+      if (idx >= 4) return 'Graduated';
+      if (idx < 0) idx = 0;
+      return yearMap[idx];
+    },
   },
   watch: {
     personalInfo: {
@@ -577,9 +858,21 @@ export default {
         this.hasChanges = true;
       },
       deep: true
+    },
+    'personalInfo.dob'(val) {
+      if (val) {
+        const d = new Date(val);
+        this.dobDate = isNaN(d.getTime()) ? null : d;
+      } else {
+        this.dobDate = null;
+      }
     }
   },
+  mounted() {
+    document.addEventListener('click', this.handleClickOutside);
+  },
   beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
     // Clean up camera stream when component is unmounted
     this.stopCamera();
   }
@@ -627,25 +920,6 @@ export default {
   object-fit: cover;
   border: 3px solid var(--color-primary);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.avatar-edit {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  background: var(--color-white);
-  border-radius: 50%;
-  padding: 0.3rem;
-  box-shadow: var(--box-shadow);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.avatar-edit span {
-  font-size: 24px;
-  color: var(--color-dark);
 }
 
 .profile-name {
@@ -734,48 +1008,38 @@ export default {
 }
 
 /* Enhanced input styles to make text boxes bolder */
-.form-group input, 
+.form-group input,
 .form-group select,
-.form-group textarea {
-  padding: 0.8rem;
-  border-radius: 0.5rem;
-  border: 2px solid var(--color-primary-light, #f0f0f0);
+.input-field {
   background: var(--color-white);
+  color: var(--color-dark);
+  border: 2px solid var(--color-primary-light, #f0f0f0);
   font-family: 'Poppins', sans-serif;
   font-weight: 500;
-  color: var(--color-dark);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-}
-
-.form-group input:focus, 
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.2);
+  width: 100%;
   outline: none;
 }
 
-.form-group input.input-error {
-  border-color: #ff3b30;
-  background-color: rgba(255, 59, 48, 0.05);
+.form-group input:focus,
+.form-group select:focus,
+.input-field:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.15);
 }
 
-.form-group input.input-error:focus {
-  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.2);
+.form-group select option[disabled] {
+  color: #ccc;
+  background: #f0f0f0;
 }
 
-.form-group .error-message {
+/* Error message styles */
+.error-message {
   color: #ff3b30;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
   font-weight: 500;
-}
-
-.form-group input::placeholder {
-  color: var(--color-dark-variant);
-  opacity: 0.7;
-  font-weight: 400;
 }
 
 .success-message {
@@ -910,6 +1174,7 @@ export default {
   border-radius: 1rem;
   background-color: #000;
   box-shadow: var(--box-shadow);
+  position: relative;
 }
 
 .face-video {
@@ -920,6 +1185,20 @@ export default {
 
 .face-canvas {
   display: none;
+}
+
+.face-guide-oval {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 80%;
+  border: 2px dashed #ff6a00;
+  border-radius: 50%;
+  z-index: 10;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .face-status {
@@ -1083,5 +1362,190 @@ export default {
   .form-row {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+.avatar-loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.size-limit-message {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Membership status colors */
+.profile-status.status-regular {
+  color: #16a34a; /* Green */
+}
+.profile-status.status-half {
+  color: orange;
+}
+.profile-status.status-phoenix {
+  color: #e60000; /* Blazing Red */
+}
+
+/* Password change form styles */
+.password-change-form {
+  border-top: 1px solid var(--color-light);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  width: 100%;
+}
+
+.password-change-form .form-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media screen and (min-width: 768px) {
+  .password-change-form .form-row:nth-child(2) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Add these styles in the <style> section */
+.form-group input[type="date"] {
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-primary-light, #f0f0f0);
+  background: var(--color-white);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  color: var(--color-dark);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.form-group input[type="date"]:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.2);
+  outline: none;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 0.3rem;
+  filter: invert(0.5);
+  transition: all 0.3s ease;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(0.3);
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-text {
+  padding: 0 0.2rem;
+  color: var(--color-dark-variant);
+}
+
+.form-group input[type="date"]::-webkit-datetime-edit-year-field,
+.form-group input[type="date"]::-webkit-datetime-edit-month-field,
+.form-group input[type="date"]::-webkit-datetime-edit-day-field {
+  padding: 0 0.2rem;
+  color: var(--color-dark);
+}
+
+.date-picker-container {
+  position: relative;
+  width: 100%;
+}
+
+.date-input {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-primary-light, #f0f0f0);
+  background: var(--color-white);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  color: var(--color-dark);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.date-input:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 65, 54, 0.2);
+  outline: none;
+}
+
+.date-input.input-error {
+  border-color: #ff3b30;
+  background-color: rgba(255, 59, 48, 0.05);
+}
+
+/* Remove all calendar-related styles */
+.custom-calendar,
+.date-icon,
+.calendar-attributes {
+  display: none;
+}
+
+.profile-input,
+.profile-input[type="text"],
+.profile-input[type="email"],
+.profile-input[type="date"],
+.profile-input[type="password"],
+.profile-input select {
+  background: #fff;
+  border: 2px solid orange;
+  border-radius: 8px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  color: #222;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  min-height: 48px;
+  appearance: none;
+}
+
+.profile-input:focus {
+  border-color: #ff6a00;
+  outline: none;
 }
 </style>  

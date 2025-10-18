@@ -30,7 +30,7 @@
           <h3>History</h3>
         </a>
         <a href="#" :class="{ active: currentPage === 'help' }" @click.prevent="setActivePage('help')">
-          <span class="material-icons">help</span>
+          <span class="material-icons">help_outline</span>
           <h3>Help & Support</h3>
         </a>
         <a href="#" @click.prevent="logout">
@@ -48,8 +48,8 @@
           <span class="material-icons">menu</span>
         </button>
         <h1>{{ pageTitles[currentPage] }}</h1>
-        <div class="date">
-          <input type="date" v-model="currentDate">
+        <div class="current-datetime">
+          {{ formattedDateTime }}
         </div>
       </div>
 
@@ -68,10 +68,6 @@
                 <span class="material-icons">add</span>
                 Deposit
               </button>
-              <button class="action-btn send" @click="showSendModal = true">
-                <span class="material-icons">arrow_forward</span>
-                Send
-              </button>
               <button class="action-btn membership" @click="showMembershipModal = true">
                 <span class="material-icons">card_membership</span>
                 Pay Membership
@@ -79,11 +75,11 @@
             </div>
           </div>
           
-          <!-- Token Card -->
+          <!-- $ASH Card -->
           <div class="card token-card">
             <div class="card-content">
-              <h3>Game Tokens</h3>
-              <h1>₱{{ gameBalance }}</h1>
+              <h3>$ASH Balance</h3>
+              <h1>$ASH {{ gameBalance }}</h1>
             </div>
             <div class="card-actions">
               <button class="action-btn exchange" @click="showExchangeModal = true">
@@ -131,10 +127,18 @@
                   </td>
                   <td>
                     <span :class="['transaction-amount', transaction.type]">
-                      {{ transaction.type === 'credit' ? '+' : '-' }}₱{{ transaction.amount }}
+                      <template v-if="transaction.title === 'Exchange Transaction' && transaction.exchangeDirection === 'tokensToWallet'">
+                        {{ transaction.type === 'credit' ? '+' : '-' }}₱{{ transaction.amount }}
+                      </template>
+                      <template v-else-if="transaction.paymentMethod === 'tokens'">
+                        {{ transaction.type === 'credit' ? '+' : '-' }}$ASH {{ transaction.amount }}
+                      </template>
+                      <template v-else>
+                        {{ transaction.type === 'credit' ? '+' : '-' }}₱{{ transaction.amount }}
+                      </template>
                     </span>
                   </td>
-                  <td>{{ formatDateTime(transaction.dateTime) }}</td>
+                  <td>{{ transaction.formattedDateTime }}</td>
                   <td>
                     <span :class="['status-badge', 'status-' + transaction.status.toLowerCase()]">
                       {{ transaction.status }}
@@ -211,11 +215,17 @@
       <!-- Exchange Modal -->
       <div v-if="showExchangeModal">
         <div class="modal-backdrop" @click="closeExchangeModal"></div>
-        <div class="modal-box">
-          <h2>Exchange Tokens</h2>
+        <div class="modal-box exchange-modal-box">
+          <div class="exchange-modal-header">
+            <span class="material-icons" style="font-size: 2rem; color: #ff6a00; margin-right: 8px;">swap_horiz</span>
+            <h2 style="margin: 0; color: #ff6a00; font-weight: 700; font-size: 1.3rem; letter-spacing: 0.5px;">Exchange $ASH</h2>
+          </div>
+          <div class="conversion-rate-info">
+            <span>Conversion Rate: <b>10 $ASH = 1 PHP</b> &nbsp;|&nbsp; <b>1 PHP = 10 $ASH</b></span>
+          </div>
           <form @submit.prevent="handleExchange">
             <div class="form-group">
-              <label for="exchangeAmount">Amount to Exchange (₱)</label>
+              <label for="exchangeAmount">Amount to Exchange</label>
               <input 
                 type="number" 
                 id="exchangeAmount" 
@@ -223,13 +233,14 @@
                 min="1" 
                 step="0.01" 
                 required
+                class="exchange-input"
               >
             </div>
             <div class="form-group">
               <label>Exchange Direction</label>
-              <select v-model="exchangeDirection" required>
-                <option value="walletToTokens">Wallet to Tokens</option>
-                <option value="tokensToWallet">Tokens to Wallet</option>
+              <select v-model="exchangeDirection" required class="exchange-select">
+                <option value="walletToTokens">Wallet to $ASH</option>
+                <option value="tokensToWallet">$ASH to Wallet</option>
               </select>
             </div>
             <div class="modal-actions">
@@ -248,40 +259,84 @@
           <div class="membership-options">
             <div 
               class="membership-option" 
-              :class="{ 'selected': selectedMembership === 'fullYear' }"
-              @click="selectedMembership = 'fullYear'"
+              :class="{ 
+                'selected': selectedMembership === 'fullYear',
+                'disabled': membershipStatus.active 
+              }"
+              @click="!membershipStatus.active && (selectedMembership = 'fullYear')"
             >
-              <h3>Full Year Membership</h3>
+              <h3>Phoenix</h3>
               <p class="price">₱100.00</p>
-              <p class="description">Access to all features for one year</p>
+              <p class="description">Become an ELITE member for one year</p>
             </div>
             <div 
               class="membership-option" 
-              :class="{ 'selected': selectedMembership === 'semester' }"
-              @click="selectedMembership = 'semester'"
+              :class="{ 
+                'selected': selectedMembership === 'semester',
+                'disabled': membershipStatus.active 
+              }"
+              @click="!membershipStatus.active && (selectedMembership = 'semester')"
             >
-              <h3>Semester Membership</h3>
+              <h3>Half-Winged Phoenix</h3>
               <p class="price">₱50.00</p>
-              <p class="description">Access to all features for one semester</p>
+              <p class="description">Become an ELITE member for one semester</p>
             </div>
+          </div>
+          <div v-if="membershipStatus.active" class="membership-warning">
+            <span class="material-icons">info</span>
+            You currently have an active {{ membershipStatus.type }} membership until {{ membershipStatus.expiry }}
           </div>
           <div class="modal-actions">
             <button type="button" class="cancel-btn" @click="closeMembershipModal">Cancel</button>
             <button 
               type="button" 
               class="confirm-btn" 
-              @click="handleMembershipPayment"
-              :disabled="!selectedMembership || isProcessing"
+              @click="openPaymentMethodModal"
+              :disabled="!selectedMembership || membershipStatus.active || isProcessing"
             >
               <span v-if="isProcessing" class="loading-spinner"></span>
-              <span v-else>Pay Now</span>
+              <span v-else>{{ membershipStatus.active ? 'Membership Active' : 'Pay Now' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method Modal -->
+      <div v-if="showPaymentMethodModal">
+        <div class="modal-backdrop" @click="closePaymentMethodModal"></div>
+        <div class="modal-box">
+          <h2>Select Payment Method</h2>
+          <div v-if="errorMessage" class="error-message" style="color: #dc3545; margin-bottom: 10px;">
+            {{ errorMessage }}
+          </div>
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select v-model="selectedPaymentMethod" required>
+              <option value="wallet">Wallet Balance (₱{{ walletBalance }})</option>
+              <option value="tokens">$ASH Balance (₱{{ gameBalance }})</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" @click="closePaymentMethodModal">Cancel</button>
+            <button 
+              type="button" 
+              class="confirm-btn" 
+              @click="handleMembershipPayment"
+              :disabled="!selectedPaymentMethod || isProcessing"
+            >
+              <span v-if="isProcessing" class="loading-spinner"></span>
+              <span v-else>Confirm Payment</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- History Content -->
-      <history-component v-if="currentPage === 'history'" :transactions="transactions" />
+      <history-component 
+        v-if="currentPage === 'history'" 
+        :transactions="transactions"
+        @refresh-transactions="fetchTransactions"
+      />
 
       <!-- Profile Content -->
       <profile 
@@ -296,22 +351,41 @@
       <!-- Game Content -->
       <game-component 
         v-if="currentPage === 'game'" 
-        :currentDate="currentDate"
+        :initialGameBalance="gameBalance"
+        @update-game-balance="updateGameBalance"
       />
 
       <!-- Help & Support Content -->
-      <help-support v-if="currentPage === 'help'" :currentDate="currentDate" />
+      <help-support v-if="currentPage === 'help'" />
+
+      <!-- Add this at the end of your template, with other modals -->
+      <div class="modal-overlay" v-if="showTransactionSuccessModal">
+        <div class="modal-container">
+          <div class="modal-content">
+            <div class="modal-icon">
+              <i class='bx bx-check-circle'></i>
+            </div>
+            <h3>Success!</h3>
+            <p>{{ transactionSuccessMessage }}</p>
+            <div class="modal-buttons">
+              <button class="modal-button confirm" @click="showTransactionSuccessModal = false">
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 </template>
 
 <script>
 import HistoryComponent from './History.vue';
-import HelpSupport from './HelpSupport.vue';
 import Profile from './Profile.vue';
 import GameComponent from './Game.vue';
+import HelpSupport from './HelpSupport.vue';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, onSnapshot, increment, setDoc } from 'firebase/firestore';
 import { app } from '../firebase';
 import { useRouter } from 'vue-router';
 
@@ -319,9 +393,9 @@ export default {
   name: 'Dashboard',
   components: {
     HistoryComponent,
-    HelpSupport,
     Profile,
-    GameComponent
+    GameComponent,
+    HelpSupport
   },
   data() {
     return {
@@ -329,12 +403,13 @@ export default {
       currentPage: 'dashboard',
       currentDate: new Date().toISOString().split('T')[0],
       userName: 'Phoenix User',
-      walletBalance: 8965.25,
-      gameBalance: 2450.00,
+      walletBalance: 0,
+      gameBalance: 0,
       showDepositModal: false,
       showSendModal: false,
       showExchangeModal: false,
       showMembershipModal: false,
+      showPaymentMethodModal: false,
       depositAmount: 0,
       sendAmount: 0,
       exchangeAmount: 0,
@@ -356,41 +431,272 @@ export default {
       },
       loading: true,
       transactions: [],
-      error: null
+      error: null,
+      now: new Date(),
+      transactionListener: null,
+      selectedPaymentMethod: 'wallet',
+      errorMessage: '',
+      isInitialized: false,
+      user: null,
+      userData: null,
+      showTransactionSuccessModal: false,
+      transactionSuccessMessage: '',
+      exchangePhpAmount: 0
     };
   },
   computed: {
     recentTransactions() {
       // Return only the 5 most recent transactions
       return this.transactions.slice(0, 5);
+    },
+    formattedDateTime() {
+      return this.now.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    },
+    membershipStatus() {
+      if (this.userData && this.userData.membershipExpiry) {
+        const expiry = this.userData.membershipExpiry.toDate();
+        const now = new Date();
+        if (expiry > now) {
+          const membershipType = this.userData.membershipType === 'fullYear' ? 'Phoenix' : 'Half-Winged Phoenix';
+          const formattedExpiry = expiry.toLocaleDateString();
+          return {
+            active: true,
+            type: membershipType,
+            expiry: formattedExpiry
+          };
+        }
+      }
+      return {
+        active: false,
+        type: 'Regular Member',
+        expiry: null
+      };
     }
   },
-  async created() {
-    this.auth = getAuth(app);
-    this.db = getFirestore(app);
-    this.router = useRouter();
-
-    // Check authentication state
-    onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        this.user = user;
-        // Fetch user data from Firestore
-        const userDoc = await getDoc(doc(this.db, "users", user.uid));
-        if (userDoc.exists()) {
-          this.userData = userDoc.data();
-          // Update wallet and game balances
-          this.walletBalance = this.userData.walletBalance || 0;
-          this.gameBalance = this.userData.gameBalance || 0;
-        }
-      } else {
-        // No user is signed in, redirect to login
-        this.router.push('/login');
-      }
-    });
-
-    await this.fetchTransactions();
+  created() {
+    this.initializeApp();
   },
   methods: {
+    async initializeApp() {
+      try {
+        this.loading = true;
+        console.log('Initializing app...');
+        
+        // Initialize Firebase services
+        this.auth = getAuth(app);
+        this.db = getFirestore(app);
+        this.router = useRouter();
+        
+        // Check if user is already authenticated
+        const currentUser = this.auth.currentUser;
+        
+        if (currentUser) {
+          console.log('User already authenticated:', currentUser.uid);
+          await this.handleUserAuthenticated(currentUser);
+        } else {
+          console.log('Waiting for authentication state...');
+          // Set up authentication state listener
+          onAuthStateChanged(this.auth, async (user) => {
+            if (user) {
+              console.log('User authenticated:', user.uid);
+              await this.handleUserAuthenticated(user);
+            } else {
+              console.log('No user authenticated, redirecting to login');
+              this.router.push('/login');
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        this.error = error.message;
+      }
+    },
+    
+    async handleUserAuthenticated(user) {
+      try {
+        console.log('Handling authenticated user:', user.uid);
+        this.user = user;
+        
+        // Load user data
+        await this.loadUserData();
+        
+        // Set up transaction listener
+        await this.setupTransactionsListener();
+        
+        // Initial fetch of transactions
+        await this.loadTransactions();
+        
+        this.isInitialized = true;
+        console.log('App initialization complete');
+      } catch (error) {
+        console.error('Error handling authenticated user:', error);
+        this.error = error.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async loadUserData() {
+      try {
+        console.log('Loading user data for:', this.user.uid);
+        const userDoc = await getDoc(doc(this.db, "users", this.user.uid));
+        
+        if (userDoc.exists()) {
+          this.userData = userDoc.data();
+          console.log('User data loaded:', this.userData);
+          
+          // Update wallet and game balances
+          this.walletBalance = Number(this.userData.walletBalance || 0);
+          this.gameBalance = Number(this.userData.gameBalance || 0);
+          
+          console.log('Balances set - Wallet:', this.walletBalance, 'Game:', this.gameBalance);
+        } else {
+          console.warn('User document does not exist');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        throw error;
+      }
+    },
+    
+    async setupTransactionsListener() {
+      try {
+        console.log('Setting up transaction listener');
+        
+        if (this.transactionListener) {
+          console.log('Cleaning up existing listener');
+          this.transactionListener();
+          this.transactionListener = null;
+        }
+        
+        const transactionsRef = collection(this.db, 'transactions');
+        const q = query(
+          transactionsRef,
+          where('userId', '==', this.user.uid),
+          orderBy('dateTime', 'desc')
+        );
+        
+        console.log('Creating snapshot listener');
+        this.transactionListener = onSnapshot(q, (snapshot) => {
+          console.log('Transaction snapshot received:', snapshot.docs.length, 'documents');
+          this.handleTransactionSnapshot(snapshot);
+        }, (error) => {
+          console.error('Error in transaction listener:', error);
+        });
+        
+        console.log('Transaction listener setup complete');
+      } catch (error) {
+        console.error('Error setting up transaction listener:', error);
+        throw error;
+      }
+    },
+    
+    handleTransactionSnapshot(snapshot) {
+      try {
+        snapshot.docChanges().forEach((change) => {
+          const data = change.doc.data();
+          const formattedTransaction = this.formatTransaction(change.doc.id, data);
+          
+          if (change.type === 'added') {
+            console.log('Transaction added:', formattedTransaction.id);
+            // Check if transaction already exists
+            const existingIndex = this.transactions.findIndex(t => t.id === formattedTransaction.id);
+            if (existingIndex === -1) {
+              this.transactions.unshift(formattedTransaction);
+            }
+          } else if (change.type === 'modified') {
+            console.log('Transaction modified:', formattedTransaction.id);
+            // Update existing transaction
+            const index = this.transactions.findIndex(t => t.id === formattedTransaction.id);
+            if (index !== -1) {
+              this.transactions.splice(index, 1, formattedTransaction);
+            }
+          } else if (change.type === 'removed') {
+            console.log('Transaction removed:', formattedTransaction.id);
+            // Remove transaction
+            const index = this.transactions.findIndex(t => t.id === formattedTransaction.id);
+            if (index !== -1) {
+              this.transactions.splice(index, 1);
+            }
+          }
+        });
+        
+        // Sort transactions by dateTime descending
+        this.transactions.sort((a, b) => b.dateTime - a.dateTime);
+        console.log('Updated transactions array:', this.transactions.length);
+      } catch (error) {
+        console.error('Error processing transaction snapshot:', error);
+      }
+    },
+    
+    formatTransaction(id, data) {
+      // Format date
+      let dateTime;
+      if (data.dateTime && typeof data.dateTime.toDate === 'function') {
+        dateTime = data.dateTime.toDate();
+      } else if (data.dateTime instanceof Date) {
+        dateTime = data.dateTime;
+      } else {
+        dateTime = new Date();
+      }
+      
+      // Format other fields
+      return {
+        id: id,
+        ...data,
+        dateTime: dateTime,
+        formattedDateTime: this.formatDateTime(dateTime),
+        amount: Number(data.amount || 0).toFixed(2),
+        walletBalance: Number(data.walletBalance || 0).toFixed(2),
+        gameBalance: Number(data.gameBalance || 0).toFixed(2),
+        previousWalletBalance: data.previousWalletBalance ? Number(data.previousWalletBalance).toFixed(2) : null,
+        previousGameBalance: data.previousGameBalance ? Number(data.previousGameBalance).toFixed(2) : null,
+        expiryDate: data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : null
+      };
+    },
+    
+    async loadTransactions() {
+      try {
+        console.log('Loading transactions...');
+        this.loading = true;
+        
+        const transactionsRef = collection(this.db, 'transactions');
+        const q = query(
+          transactionsRef,
+          where('userId', '==', this.user.uid),
+          orderBy('dateTime', 'desc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        console.log('Fetched transactions count:', querySnapshot.docs.length);
+        
+        // Clear existing transactions
+        this.transactions = [];
+        
+        // Process each transaction
+        querySnapshot.docs.forEach(doc => {
+          const formattedTransaction = this.formatTransaction(doc.id, doc.data());
+          this.transactions.push(formattedTransaction);
+        });
+        
+        // Sort transactions
+        this.transactions.sort((a, b) => b.dateTime - a.dateTime);
+        console.log('Transactions loaded:', this.transactions.length);
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
     openSidebar() {
       this.isSidebarOpen = true;
     },
@@ -412,16 +718,80 @@ export default {
         alert("Error signing out. Please try again.");
       }
     },
-    handleDeposit() {
+    async handleDeposit() {
       if (this.depositAmount <= 0) {
         alert('Please enter a valid amount');
         return;
       }
-      
-      this.walletBalance = Number(this.walletBalance) + Number(this.depositAmount);
-      this.addTransaction(this.depositAmount, 'Transaction Complete', 'Deposit');
-      this.showDepositModal = false;
-      this.depositAmount = 0;
+
+      if (!this.user) {
+        alert('User not authenticated. Please log in.');
+        return;
+      }
+
+      // PayMongo public key for demo
+      const PAYMONGO_PUBLIC_KEY = 'pk_test_CseY8QUggCjWn5FWk71y3FTd';
+
+      try {
+        // 1. Create a pending transaction in Firestore
+        const transactionsRef = collection(this.db, 'transactions');
+        const transactionData = {
+          userId: this.user.uid,
+          email: this.user.email,
+          type: 'credit', // It's a credit to the user's wallet
+          amount: Number(this.depositAmount), // Store as number
+          status: 'Pending', // Initial status
+          title: 'Money Deposit',
+          description: `Pending deposit of ₱${Number(this.depositAmount).toFixed(2)} to wallet`,
+          dateTime: serverTimestamp(),
+          reference: `#DEPOSIT-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, // Unique reference
+          paymentMethod: 'gcash' // Assuming GCash for this flow based on your PayMongo code
+        };
+
+        const transactionRef = await addDoc(transactionsRef, transactionData);
+        console.log('Pending deposit transaction created with ID:', transactionRef.id);
+
+        const response = await fetch('https://api.paymongo.com/v1/sources', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Basic ' + btoa(PAYMONGO_PUBLIC_KEY + ':'),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            data: {
+              attributes: {
+                amount: this.depositAmount * 100, // centavos
+                redirect: {
+                  success: `${window.location.origin}/deposit-success?transactionId=${transactionRef.id}&userId=${this.user.uid}`,
+                  failed: `${window.location.origin}/deposit-failed?transactionId=${transactionRef.id}&userId=${this.user.uid}`
+                },
+                type: 'gcash', // or 'grab_pay'
+                currency: 'PHP'
+              }
+            }
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.data && result.data.attributes && result.data.attributes.redirect) {
+          // Redirect user to PayMongo checkout
+          localStorage.setItem('pendingDepositAmount', this.depositAmount);
+          window.location.href = result.data.attributes.redirect.checkout_url;
+        } else {
+          alert('Failed to create payment source: ' + (result.errors ? result.errors[0].detail : 'Unknown error'));
+          // Optionally update the pending transaction status to Failed here as well
+          if (transactionRef && transactionRef.id) {
+            await updateDoc(transactionRef, { status: 'Failed', description: 'Payment source creation failed.' });
+          }
+        }
+      } catch (error) {
+        alert('Error creating payment: ' + error.message);
+        // Optionally update the pending transaction status to Failed here as well
+        if (transactionRef && transactionRef.id) {
+          await updateDoc(transactionRef, { status: 'Failed', description: 'Payment source creation failed.' });
+        }
+      }
     },
     handleSend() {
       if (this.sendAmount <= 0) {
@@ -437,127 +807,433 @@ export default {
         return;
       }
 
-      this.walletBalance = Number(this.walletBalance) - Number(this.sendAmount);
-      this.addTransaction(this.sendAmount, 'Transaction Complete', 'Send');
-      this.showSendModal = false;
-      this.sendAmount = 0;
-      this.recipientAddress = '';
+      const newWalletBalance = Number(this.walletBalance) - Number(this.sendAmount);
+      
+      this.addTransaction(this.sendAmount, 'Transaction Complete', 'Send', {
+        newWalletBalance: newWalletBalance,
+        previousWalletBalance: this.walletBalance,
+        recipientAddress: this.recipientAddress
+      }).then(() => {
+        this.walletBalance = newWalletBalance;
+        this.showSendModal = false;
+        this.sendAmount = 0;
+        this.recipientAddress = '';
+        this.transactionSuccessMessage = 'Your send transaction was successful!';
+        this.showTransactionSuccessModal = true;
+      }).catch(error => {
+        console.error('Error processing send:', error);
+        alert('Error processing send. Please try again.');
+      });
     },
-    handleExchange() {
+    async handleExchange() {
       if (this.exchangeAmount <= 0) {
-        alert('Please enter a valid amount');
+        this.errorMessage = 'Please enter a valid amount';
         return;
       }
 
-      if (this.exchangeDirection === 'walletToTokens') {
-        if (this.exchangeAmount > this.walletBalance) {
-          alert('Insufficient wallet balance');
-          return;
+      this.isProcessing = true;
+      try {
+        if (!this.user) {
+          throw new Error('User not authenticated');
         }
-        this.walletBalance = Number(this.walletBalance) - Number(this.exchangeAmount);
-        this.gameBalance = Number(this.gameBalance) + Number(this.exchangeAmount);
-      } else {
-        if (this.exchangeAmount > this.gameBalance) {
-          alert('Insufficient token balance');
-          return;
-        }
-        this.gameBalance = Number(this.gameBalance) - Number(this.exchangeAmount);
-        this.walletBalance = Number(this.walletBalance) + Number(this.exchangeAmount);
-      }
 
-      this.addTransaction(this.exchangeAmount, 'Transaction Complete', 'Exchange');
-      this.showExchangeModal = false;
-      this.exchangeAmount = 0;
+        const db = getFirestore(app);
+        let success = false;
+        let newWalletBalance = this.walletBalance;
+        let newGameBalance = this.gameBalance;
+
+        if (this.exchangeDirection === 'walletToTokens') {
+          // 1 PHP = 10 tokens
+          if (this.exchangeAmount > this.walletBalance) {
+            this.errorMessage = 'Insufficient wallet balance';
+            return;
+          }
+          const tokensToAdd = Number(this.exchangeAmount) * 10;
+          newWalletBalance = Number(this.walletBalance) - Number(this.exchangeAmount);
+          newGameBalance = Number(this.gameBalance) + tokensToAdd;
+          success = true;
+        } else {
+          // 10 tokens = 1 PHP
+          const tokensToConvert = Number(this.exchangeAmount);
+          if (tokensToConvert > this.gameBalance) {
+            this.errorMessage = 'Insufficient token balance';
+            return;
+          }
+          if (tokensToConvert % 10 !== 0) {
+            this.errorMessage = 'You can only convert in multiples of 10 tokens.';
+            return;
+          }
+          const phpAmount = tokensToConvert / 10;
+          newGameBalance = Number(this.gameBalance) - tokensToConvert;
+          newWalletBalance = Number(this.walletBalance) + phpAmount;
+          this.exchangePhpAmount = phpAmount; // Store for transaction record
+          success = true;
+        }
+
+        if (success) {
+          console.log('Processing exchange transaction...');
+          console.log('Current balances - Wallet:', this.walletBalance, 'Game:', this.gameBalance);
+          console.log('New balances - Wallet:', newWalletBalance, 'Game:', newGameBalance);
+
+          // Create transaction data
+          const transactionData = {
+            userId: this.user.uid,
+            email: this.user.email,
+            type: this.exchangeDirection === 'walletToTokens' ? 'debit' : 'credit',
+            amount: this.exchangeDirection === 'walletToTokens'
+              ? Number(this.exchangeAmount).toFixed(2)
+              : Number(this.exchangePhpAmount).toFixed(2),
+            status: 'Transaction Complete',
+            title: 'Exchange Transaction',
+            description: this.exchangeDirection === 'walletToTokens'
+              ? `Exchanged ₱${this.exchangeAmount} from wallet to $ASH`
+              : `Exchanged $ASH ${this.exchangeAmount} to ₱${this.exchangePhpAmount} in wallet`,
+            dateTime: serverTimestamp(),
+            reference: `#EXCH-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            exchangeDirection: this.exchangeDirection,
+            walletBalance: newWalletBalance,
+            gameBalance: newGameBalance,
+            previousWalletBalance: this.walletBalance,
+            previousGameBalance: this.gameBalance
+          };
+
+          console.log('Creating transaction record in Firestore');
+
+          // Add transaction to Firestore
+          const transactionRef = await addDoc(collection(db, 'transactions'), transactionData);
+          console.log('Transaction added with ID:', transactionRef.id);
+
+          // Update user's balances in Firestore
+          const userRef = doc(db, "users", this.user.uid);
+          await updateDoc(userRef, {
+            walletBalance: newWalletBalance,
+            gameBalance: newGameBalance,
+            lastTransaction: serverTimestamp()
+          });
+          console.log('User balances updated in Firestore');
+
+          // Update local state
+          this.walletBalance = newWalletBalance;
+          this.gameBalance = newGameBalance;
+
+          // Add transaction to local array immediately for instant UI update
+          const newTransaction = {
+            id: transactionRef.id,
+            ...transactionData,
+            dateTime: new Date(),
+            formattedDateTime: this.formatDateTime(new Date()),
+            amount: Number(transactionData.amount).toFixed(2),
+            walletBalance: Number(transactionData.walletBalance).toFixed(2),
+            gameBalance: Number(transactionData.gameBalance).toFixed(2),
+            previousWalletBalance: transactionData.previousWalletBalance ? Number(transactionData.previousWalletBalance).toFixed(2) : null,
+            previousGameBalance: transactionData.previousGameBalance ? Number(transactionData.previousGameBalance).toFixed(2) : null,
+            expiryDate: transactionData.expiryDate ? new Date(transactionData.expiryDate).toLocaleDateString() : null
+          };
+          
+          // Add to the beginning of the array
+          this.transactions.unshift(newTransaction);
+          console.log('Transaction added to local array');
+
+          // Explicitly reload transactions to ensure consistency
+          await this.loadTransactions();
+          console.log('Transactions reloaded');
+
+          // Close modal and reset form
+          this.showExchangeModal = false;
+          this.exchangeAmount = 0;
+          this.errorMessage = '';
+
+          // Show success message
+          this.transactionSuccessMessage = 'Exchange completed successfully!';
+          this.showTransactionSuccessModal = true;
+        }
+      } catch (error) {
+        console.error('Error processing exchange:', error);
+        this.transactionSuccessMessage = 'Error processing exchange. Please try again.';
+        this.showTransactionSuccessModal = true;
+      } finally {
+        this.isProcessing = false;
+      }
+    },
+    async updateGameBalance(newBalance) {
+      this.gameBalance = newBalance;
+      
+      // Update Firestore with new game balance
+      if (this.user) {
+        const userRef = doc(this.db, "users", this.user.uid);
+        await updateDoc(userRef, {
+          gameBalance: this.gameBalance
+        });
+      }
+    },
+    openPaymentMethodModal() {
+      this.showPaymentMethodModal = true;
+    },
+    closePaymentMethodModal() {
+      this.showPaymentMethodModal = false;
+      this.errorMessage = '';
     },
     closeMembershipModal() {
       this.showMembershipModal = false;
       this.selectedMembership = null;
       this.isProcessing = false;
+      this.showPaymentMethodModal = false;
+      this.errorMessage = '';
     },
     async handleMembershipPayment() {
-      if (!this.selectedMembership) return;
-      
-      this.isProcessing = true;
-      
-      try {
-        const auth = getAuth(app);
-        const user = auth.currentUser;
-        
-        if (!user) {
-          throw new Error('No user logged in');
-        }
+      if (!this.selectedMembership) {
+        this.errorMessage = 'Please select a membership plan';
+        return;
+      }
 
-        const db = getFirestore(app);
-        const userRef = doc(db, 'users', user.uid);
-        
-        // Check if user has sufficient balance
-        if (this.walletBalance < this.membershipPrices[this.selectedMembership]) {
-          throw new Error('Insufficient balance');
-        }
-
-        // Calculate membership expiry date
+      // Check if user has an active membership
+      if (this.userData && this.userData.membershipExpiry) {
+        const expiry = this.userData.membershipExpiry.toDate();
         const now = new Date();
-        const expiryDate = new Date(now);
-        if (this.selectedMembership === 'fullYear') {
-          expiryDate.setFullYear(now.getFullYear() + 1);
+        if (expiry > now) {
+          const formattedExpiry = expiry.toLocaleDateString();
+          this.errorMessage = `You already have an active ${this.userData.membershipType === 'fullYear' ? 'Phoenix' : 'Half-Winged Phoenix'} membership until ${formattedExpiry}. Please wait for it to expire before purchasing a new membership.`;
+          return;
+        }
+      }
+
+      const phpAmount = this.membershipPrices[this.selectedMembership];
+      const paymentType = this.selectedMembership === 'fullYear' ? 'fullYear' : 'semestral';
+
+      // Calculate amount based on payment method ($ASH requires 10x the PHP amount)
+      const amount = this.selectedPaymentMethod === 'tokens' ? phpAmount * 10 : phpAmount;
+
+      // Check selected payment method balance
+      if (this.selectedPaymentMethod === 'wallet' && phpAmount > this.walletBalance) {
+        this.errorMessage = 'Insufficient wallet balance';
+        return;
+      }
+      if (this.selectedPaymentMethod === 'tokens' && amount > this.gameBalance) {
+        this.errorMessage = 'Insufficient $ASH balance';
+        return;
+      }
+      this.errorMessage = '';
+      this.isProcessing = true;
+
+      try {
+        // Calculate new balances
+        let newWalletBalance = this.walletBalance;
+        let newGameBalance = this.gameBalance;
+        
+        if (this.selectedPaymentMethod === 'wallet') {
+          newWalletBalance = Number(this.walletBalance) - phpAmount;
         } else {
-          // For semester, add 6 months
-          expiryDate.setMonth(now.getMonth() + 6);
+          newGameBalance = Number(this.gameBalance) - amount; // Deduct the $ASH amount (10x PHP)
         }
 
-        // Create transaction record
-        const transactionRef = await addDoc(collection(db, 'transactions'), {
-          userId: user.uid,
-          type: 'membership',
-          amount: this.membershipPrices[this.selectedMembership],
-          status: 'Completed',
-          title: `${this.selectedMembership === 'fullYear' ? 'Full Year' : 'Semester'} Membership Payment`,
-          description: 'Membership fee payment',
-          dateTime: serverTimestamp(),
-          reference: `#MEM-${Math.random().toString(36).substr(2, 7)}`,
-          membershipType: this.selectedMembership,
-          expiryDate: expiryDate
-        });
+        // Calculate membership expiry
+        const expiryDate = this.calculateMembershipExpiry(this.selectedMembership);
+        const { Timestamp } = await import('firebase/firestore');
+        const expiryTimestamp = Timestamp.fromDate(expiryDate);
 
-        // Update user's wallet balance
-        const newBalance = this.walletBalance - this.membershipPrices[this.selectedMembership];
-        await updateDoc(userRef, {
-          walletBalance: newBalance,
+        // Record the transaction in Firestore
+        const transactionData = {
+          userId: this.user.uid,
+          email: this.user.email,
+          type: 'debit',
+          amount: this.selectedPaymentMethod === 'tokens' ? amount : phpAmount,
+          status: 'Transaction Complete',
+          title: 'Membership Payment',
+          description: `Membership payment of ${this.selectedPaymentMethod === 'tokens' ? amount + ' $ASH' : '₱' + phpAmount} for ${this.selectedMembership} plan (Valid until ${expiryDate.toLocaleDateString()})`,
+          dateTime: serverTimestamp(),
+          reference: `#MEMB-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
           membershipType: this.selectedMembership,
-          membershipExpiryDate: expiryDate
+          expiryDate: expiryTimestamp,
+          paymentMethod: this.selectedPaymentMethod,
+          walletBalance: newWalletBalance,
+          gameBalance: newGameBalance,
+          previousWalletBalance: this.walletBalance,
+          previousGameBalance: this.gameBalance
+        };
+
+        // Add transaction to Firestore
+        await addDoc(collection(this.db, 'transactions'), transactionData);
+
+        // Update user's membership status and balances in Firestore
+        const userRef = doc(this.db, "users", this.user.uid);
+        await updateDoc(userRef, {
+          membershipType: this.selectedMembership,
+          membershipExpiry: expiryTimestamp,
+          lastMembershipPayment: serverTimestamp(),
+          walletBalance: newWalletBalance,
+          gameBalance: newGameBalance,
+          isPaid: true,
+          paymentType: paymentType
         });
 
         // Update local state
-        this.walletBalance = newBalance;
-        
-        // Show success message
-        alert('Membership payment successful!');
-        
-        // Close modal
-        this.closeMembershipModal();
+        this.walletBalance = newWalletBalance;
+        this.gameBalance = newGameBalance;
+        this.showMembershipModal = false;
+        this.selectedMembership = null;
+        this.selectedPaymentMethod = 'wallet';
+        this.showPaymentMethodModal = false;
 
+        // Show success message
+        this.transactionSuccessMessage = `Membership payment successful! Paid with ${this.selectedPaymentMethod === 'tokens' ? amount + ' $ASH' : '₱' + phpAmount}`;
+        this.showTransactionSuccessModal = true;
+
+        // Increment the admin wallet
+        const walletRef = doc(this.db, 'admin_wallet', 'main');
+        // Ensure the wallet exists
+        const walletDoc = await getDoc(walletRef);
+        if (!walletDoc.exists()) {
+          await setDoc(walletRef, { balance: 0 });
+        }
+        // Increment the balance
+        await updateDoc(walletRef, {
+          balance: increment(phpAmount) // phpAmount is the membership price (e.g., 50 or 100)
+        });
       } catch (error) {
         console.error('Error processing membership payment:', error);
-        alert(error.message || 'Error processing payment. Please try again.');
+        this.errorMessage = 'Error processing payment. Please try again.';
       } finally {
         this.isProcessing = false;
       }
     },
-    addTransaction(amount, status, type) {
+    calculateMembershipExpiry(membershipType) {
       const now = new Date();
-      const date = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
-      const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      
-      this.transactions.unshift({
-        amount: Number(amount).toFixed(2),
-        date,
-        time,
-        status: `${type} - ${status}`
-      });
+      const year = now.getFullYear();
+      const month = now.getMonth(); // 0 = Jan, 7 = Aug, 11 = Dec
 
-      // Keep only the latest 5 transactions
-      if (this.transactions.length > 5) {
-        this.transactions.pop();
+      if (membershipType === 'fullYear') {
+        // If paid between June and December, next expiry is May 31 of the next year
+        // If paid between January and May, expiry is May 31 of the same year
+        let expiryYear;
+        if (month >= 5) { // June (5) or later
+          expiryYear = year + 1;
+        } else {
+          expiryYear = year;
+        }
+        // Full year covers up to May 31 of the next year
+        return new Date(expiryYear, 4, 31, 23, 59, 59, 999); // May is month 4
+      } else if (membershipType === 'semester') {
+        // If paid between June and December, expiry is Dec 31 of this year
+        // If paid between January and May, expiry is May 31 of this year
+        if (month >= 5 && month <= 11) { // June to December
+          return new Date(year, 11, 31, 23, 59, 59, 999); // Dec 31
+        } else {
+          return new Date(year, 4, 31, 23, 59, 59, 999); // May 31
+        }
+      }
+      // fallback
+      return now;
+    },
+    async addTransaction(amount, status, type, additionalData = {}) {
+      try {
+        if (!this.user) {
+          throw new Error('User not authenticated');
+        }
+
+        const db = getFirestore(app);
+        // Format amount to 2 decimal places
+        const formattedAmount = Number(amount).toFixed(2);
+        
+        // Generate a unique reference number
+        const referenceNumber = `#${type}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+        
+        // Determine transaction type and description
+        let transactionType = type.toLowerCase();
+        let description = '';
+        
+        switch(type) {
+          case 'Deposit':
+            transactionType = 'credit';
+            description = `Deposit of ₱${formattedAmount} to wallet`;
+            break;
+          case 'Send':
+            transactionType = 'debit';
+            description = `Sent ₱${formattedAmount} to ${this.recipientAddress}`;
+            break;
+          case 'Exchange':
+            transactionType = additionalData.exchangeDirection === 'walletToTokens' ? 'debit' : 'credit';
+            description = additionalData.exchangeDirection === 'walletToTokens' 
+              ? `Exchanged ₱${formattedAmount} from wallet to game tokens`
+              : `Exchanged ₱${formattedAmount} from game tokens to wallet`;
+            break;
+          case 'Membership':
+            transactionType = 'debit';
+            const membershipType = additionalData.membershipType || this.selectedMembership;
+            const expiryDate = additionalData.expiryDate 
+              ? new Date(additionalData.expiryDate).toLocaleDateString()
+              : this.calculateMembershipExpiry(membershipType).toLocaleDateString();
+            description = `Membership payment of ₱${formattedAmount} for ${membershipType} plan (Valid until ${expiryDate})`;
+            break;
+          default:
+            description = `${type} transaction of ₱${formattedAmount}`;
+        }
+        
+        // Create transaction record with enhanced metadata
+        const transactionData = {
+          userId: this.user.uid,
+          email: this.user.email,
+          type: transactionType,
+          amount: formattedAmount,
+          status: status,
+          title: `${type} Transaction`,
+          description: description,
+          dateTime: serverTimestamp(),
+          reference: referenceNumber,
+          recipientAddress: this.recipientAddress || null,
+          exchangeDirection: type === 'Exchange' ? additionalData.exchangeDirection : null,
+          membershipType: type === 'Membership' ? (additionalData.membershipType || this.selectedMembership) : null,
+          walletBalance: additionalData.newWalletBalance || this.walletBalance,
+          gameBalance: additionalData.newGameBalance || this.gameBalance,
+          previousWalletBalance: additionalData.previousWalletBalance || null,
+          previousGameBalance: additionalData.previousGameBalance || null,
+          expiryDate: additionalData.expiryDate || null,
+          transactionDetails: {
+            type: type,
+            direction: additionalData.exchangeDirection,
+            membershipType: this.selectedMembership,
+            recipient: this.recipientAddress
+          }
+        };
+
+        console.log('Creating transaction record in Firestore via addTransaction');
+
+        // Add transaction to Firestore
+        const transactionRef = await addDoc(collection(db, 'transactions'), transactionData);
+        console.log('Transaction added with ID:', transactionRef.id);
+
+        // Add transaction to local array immediately for instant UI update
+        const newTransaction = {
+          id: transactionRef.id,
+          ...transactionData,
+          dateTime: new Date(),
+          formattedDateTime: this.formatDateTime(new Date()),
+          amount: Number(transactionData.amount).toFixed(2),
+          walletBalance: Number(transactionData.walletBalance || 0).toFixed(2),
+          gameBalance: Number(transactionData.gameBalance || 0).toFixed(2),
+          previousWalletBalance: transactionData.previousWalletBalance ? Number(transactionData.previousWalletBalance).toFixed(2) : null,
+          previousGameBalance: transactionData.previousGameBalance ? Number(transactionData.previousGameBalance).toFixed(2) : null,
+          expiryDate: transactionData.expiryDate ? new Date(transactionData.expiryDate).toLocaleDateString() : null
+        };
+        
+        // Add to the beginning of the array
+        this.transactions.unshift(newTransaction);
+        console.log('Transaction added to local array via addTransaction');
+
+        // Explicitly reload transactions to ensure consistency
+        await this.loadTransactions();
+        console.log('Transactions reloaded via addTransaction');
+
+        // Show success message
+        this.transactionSuccessMessage = `${type} transaction completed successfully!`;
+        this.showTransactionSuccessModal = true;
+
+        return transactionRef;
+
+      } catch (error) {
+        console.error('Error adding transaction:', error);
+        this.transactionSuccessMessage = 'Error recording transaction. Please try again.';
+        this.showTransactionSuccessModal = true;
+        throw error;
       }
     },
     updateUserName(newName) {
@@ -576,42 +1252,6 @@ export default {
         });
       });
     },
-    async fetchTransactions() {
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        const auth = getAuth(app);
-        const user = auth.currentUser;
-        
-        if (!user) {
-          throw new Error('No user logged in');
-        }
-
-        const db = getFirestore(app);
-        const transactionsRef = collection(db, 'transactions');
-        
-        // Query transactions for the current user, ordered by date, limited to 5
-        const q = query(
-          transactionsRef,
-          where('userId', '==', user.uid),
-          orderBy('dateTime', 'desc'),
-          limit(5)
-        );
-
-        const querySnapshot = await getDocs(q);
-        this.transactions = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-        this.error = error.message;
-      } finally {
-        this.loading = false;
-      }
-    },
     formatDateTime(timestamp) {
       if (!timestamp) return '';
       
@@ -624,7 +1264,7 @@ export default {
         minute: 'numeric',
         hour12: true
       });
-    }
+    },
   },
   mounted() {
     this.initializeButtonEffects();
@@ -634,6 +1274,20 @@ export default {
         this.isSidebarOpen = false;
       }
     });
+
+    this.timer = setInterval(() => {
+      this.now = new Date();
+    }, 1000);
+  },
+  beforeUnmount() {
+    console.log('Component unmounting, cleaning up resources...');
+    clearInterval(this.timer);
+    
+    if (this.transactionListener) {
+      console.log('Cleaning up transaction listener');
+      this.transactionListener();
+      this.transactionListener = null;
+    }
   }
 };
 </script>
@@ -931,17 +1585,20 @@ main {
   border-bottom: 1px solid var(--color-light);
 }
 
-.date {
-  background-color: var(--color-light-variant);
-  padding: 5px 10px;
-  border-radius: var(--border-radius);
-}
-
-.date input {
-  border: none;
-  background: transparent;
-  color: var(--color-dark-variant);
-  cursor: pointer;
+.current-datetime {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  color: #ff6a00;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.85);
+  padding: 6px 16px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  z-index: 10;
 }
 
 .financial-cards {
@@ -1147,28 +1804,72 @@ tbody tr:hover {
   }
 }
 
-@media screen and (max-width: 768px) {
-  :root {
-    --sidebar-width: 0;
+/* Responsive Design */
+@media screen and (max-width: 1200px) {
+  .container {
+    grid-template-columns: 60px 1fr;
   }
   
+  #sidebar {
+    width: 60px;
+    transform: translateX(0);
+  }
+  
+  main {
+    left: 60px;
+    width: calc(100vw - 60px);
+    margin-left: 0;
+  }
+
+  .sidebar-nav h3 {
+    display: none;
+  }
+
+  .logo img {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .admin-wallet-card h1 {
+    font-size: 2rem;
+  }
+
+  .elite-card h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
   .container {
     grid-template-columns: 1fr;
   }
-
-  main {
-    margin-left: 0;
-    width: 100vw;
-  }
-
+  
   #sidebar {
-    left: -100%;
-    width: 200px;
-    transition: var(--transition);
+    transform: translateX(-100%);
+    width: 280px;
+    z-index: 1000;
   }
-
+  
   #sidebar.show {
+    transform: translateX(0);
+  }
+  
+  main {
     left: 0;
+    width: 100%;
+    margin-left: 0;
+    padding: 0 16px 16px 16px;
+    margin-top: 0; /* Ensure no top margin */
   }
 
   .sidebar-nav h3 {
@@ -1176,47 +1877,195 @@ tbody tr:hover {
   }
 
   .logo img {
-    width: 100px;
-    height: 60px;
+    width: 80%;
+    height: auto;
   }
 
   .close-btn {
-    display: inline-block;
+    display: block;
   }
 
   .menu-toggle {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .main-header {
+    padding: 0 0 8px 0; /* Remove top padding */
+    margin: 0 0 16px 0; /* Remove top margin */
+    position: relative;
+  }
+
+  .main-header h1 {
+    text-align: left;
+    margin-left: 8px;
+    font-size: 1.5rem;
+  }
+
+  .current-datetime {
+    display: none;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+
+  .table-wrapper {
+    margin: 0 -16px;
+    border-radius: 0;
+    overflow-x: auto;
+  }
+
+  th, td {
+    padding: 12px;
+    white-space: nowrap;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 16px;
+    padding: 20px;
+  }
+
+  .detail-group .modal-card-box {
+    max-width: 100%;
   }
 }
 
-@media screen and (max-width: 540px) {
+@media screen and (max-width: 480px) {
   main {
-    padding: 15px;
+    padding: 0 12px 12px 12px;
+    margin-top: 0; /* Ensure no top margin */
   }
-  
-  .financial-cards {
-    grid-template-columns: 1fr;
-  }
-  
+
   .main-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
+    padding: 0 0 4px 0; /* Remove top padding */
+    margin: 0 0 12px 0; /* Remove top margin */
   }
-  
-  .date {
-    width: 100%;
+
+  .main-header h1 {
+    font-size: 1.25rem;
+    margin-left: 0;
   }
-  
-  .card-actions {
-    flex-direction: column;
-    width: 100%;
+
+  .card {
+    padding: 16px;
   }
-  
+
+  .admin-wallet-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-wallet-card h3 {
+    font-size: 0.9rem;
+  }
+
+  .elite-card h1 {
+    font-size: 1.5rem;
+  }
+
   .action-btn {
-    width: 100%;
-    justify-content: center;
+    padding: 10px 16px;
+    font-size: 0.85rem;
   }
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  .table-wrapper {
+    margin: 0 -12px;
+  }
+
+  th, td {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .modal-content {
+    padding: 16px;
+    margin: 12px;
+  }
+
+  .detail-group label {
+    font-size: 0.85rem;
+  }
+
+  .detail-group p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Add smooth transitions for all responsive changes */
+#sidebar,
+main,
+.main-header,
+.admin-stats,
+.card,
+.table-wrapper,
+.modal-content {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure modals are always responsive */
+.modal {
+  padding: 16px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Improve table responsiveness */
+.table-wrapper {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: var(--color-light);
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+/* Ensure buttons remain clickable on mobile */
+button,
+.action-btn,
+.icon-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Improve form element touch targets */
+input,
+select,
+textarea {
+  min-height: 44px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 .membership-options {
@@ -1447,5 +2296,114 @@ tbody tr:hover {
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.15);
   z-index: 1000;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--color-dark-variant);
+  text-decoration: none;
+  transition: var(--transition);
+  border-radius: 6px;
+  margin: 4px 10px;
+}
+
+.nav-link:hover {
+  background-color: var(--color-light);
+}
+
+.nav-link.router-link-active {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.nav-link .material-icons {
+  margin-right: 10px;
+}
+
+.exchange-modal-box {
+  background: #fff8f2;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(255,106,0,0.10);
+  padding: 32px 28px 24px 28px;
+  max-width: 400px;
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.exchange-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, #ff6a00 0%, #ff9800 100%);
+  border-radius: 12px 12px 0 0;
+  padding: 16px 0 12px 0;
+  margin: -32px -28px 18px -28px;
+  box-shadow: 0 2px 8px rgba(255,106,0,0.07);
+}
+.conversion-rate-info {
+  margin-bottom: 18px;
+  text-align: center;
+  color: #ff6a00;
+  font-weight: 600;
+  font-size: 1.05rem;
+  background: rgba(255,106,0,0.07);
+  border-radius: 8px;
+  padding: 10px 0;
+  letter-spacing: 0.2px;
+}
+.exchange-input, .exchange-select {
+  border: 1.5px solid #ffb366;
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  background: #fff;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  transition: border-color 0.2s;
+}
+.exchange-input:focus, .exchange-select:focus {
+  border-color: #ff6a00;
+  outline: none;
+}
+@media (max-width: 540px) {
+  .exchange-modal-box {
+    padding: 18px 6px 12px 6px;
+    max-width: 98vw;
+  }
+  .exchange-modal-header {
+    margin: -18px -6px 12px -6px;
+    padding: 10px 0 8px 0;
+  }
+}
+.membership-option.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.membership-active-notice {
+  color: #ff6a00;
+  font-size: 0.8rem;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.membership-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 106, 0, 0.1);
+  color: #ff6a00;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+.membership-warning .material-icons {
+  font-size: 20px;
 }
 </style>

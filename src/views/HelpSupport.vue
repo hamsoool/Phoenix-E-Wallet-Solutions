@@ -1,90 +1,79 @@
 <template>
-  <div>
-    
+  <div class="help-support">
+    <div class="header">
+      <h1>Help & Support</h1>
+      <p>Get assistance with your account, gameplay, or technical issues</p>
+    </div>
 
-    <div class="support-container">
-      <!-- FAQ Section -->
-      <div class="faq-section">
-        <h2>Frequently Asked Questions</h2>
-        
-        <div class="accordion">
-          <div class="accordion-item" v-for="(faq, index) in faqs" :key="index">
-            <button 
-              class="accordion-toggle" 
-              @click="toggleFaq(index)" 
-              :class="{ active: faq.isOpen }"
-              :aria-expanded="faq.isOpen"
-              :aria-controls="`faq-panel-${index}`"
-            >
-              {{ faq.question }}
-              <span class="icon">{{ faq.isOpen ? '−' : '+' }}</span>
-            </button>
-            <div 
-              class="accordion-content" 
-              :id="`faq-panel-${index}`" 
-              :class="{ open: faq.isOpen }"
-            >
-              <p>{{ faq.answer }}</p>
-            </div>
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div 
+          v-for="(faq, index) in faqs" 
+          :key="index"
+          class="faq-item"
+          :class="{ 'active': faq.isOpen }"
+        >
+          <div class="faq-question" @click="toggleFAQ(index)">
+            <h3>{{ faq.question }}</h3>
+            <span class="material-icons">
+              {{ faq.isOpen ? 'expand_less' : 'expand_more' }}
+            </span>
+          </div>
+          <div class="faq-answer" v-show="faq.isOpen">
+            <p>{{ faq.answer }}</p>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Contact Form Section -->
-      <div class="contact-section">
-        <h2>Contact Support</h2>
-        
-        <form class="contact-form" @submit.prevent="submitSupportRequest">
-          <div class="form-group">
-            <label for="issue-type">Issue Type</label>
-            <select id="issue-type" v-model="supportForm.issueType" required>
-              <option value="">Select an issue type</option>
-              <option value="account">Account Issues</option>
-              <option value="payment">Payment Problems</option>
-              <option value="technical">Technical Support</option>
-              <option value="feedback">Feedback & Suggestions</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
+    <!-- Support Request Box -->
+    <div class="support-request-box">
+      <h2>Submit a Support Request</h2>
+      <form @submit.prevent="submitSupportRequest">
+        <div class="form-group">
+          <label for="supportSubject">Subject</label>
+          <input id="supportSubject" v-model="supportForm.subject" type="text" required maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label for="supportIssueType">Issue Type</label>
+          <select id="supportIssueType" v-model="supportForm.issueType" required>
+            <option value="">Select Issue Type</option>
+            <option value="Account">Account</option>
+            <option value="Gameplay">Gameplay</option>
+            <option value="Technical">Technical</option>
+            <option value="Payment">Payment</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="supportMessage">Message</label>
+          <textarea id="supportMessage" v-model="supportForm.message" rows="4" required maxlength="1000"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" :disabled="supportLoading">Submit</button>
+        </div>
+        <div v-if="supportSuccess" class="support-success">Your request has been sent. Our team will get back to you soon.</div>
+        <div v-if="supportError" class="support-error">{{ supportError }}</div>
+      </form>
+    </div>
 
-          <div class="form-group">
-            <label for="subject">Subject</label>
-            <input type="text" id="subject" placeholder="Brief description of your issue" v-model="supportForm.subject" required>
-          </div>
-
-          <div class="form-group">
-            <label for="message">Message</label>
-            <textarea id="message" placeholder="Please provide details about your issue" v-model="supportForm.message" required></textarea>
-          </div>
-
-          <button type="submit" class="btn-submit">Submit Request</button>
-        </form>
-
-        <div class="support-channels">
-          <h3>Other Ways to Reach Us</h3>
-          <div class="channels-grid">
-            <a href="mailto:support@phoenix.com" class="channel-item">
-              <span class="material-icons">email</span>
-              <div>
-                <h4>Email Support</h4>
-                <p>support@phoenix.com</p>
-              </div>
-            </a>
-            <a href="tel:1-800-PHOENIX" class="channel-item">
-              <span class="material-icons">phone</span>
-              <div>
-                <h4>Phone Support</h4>
-                <p>1-800-PHOENIX</p>
-              </div>
-            </a>
-            <a href="#" @click.prevent="startLiveChat" class="channel-item">
-              <span class="material-icons">chat</span>
-              <div>
-                <h4>Live Chat</h4>
-                <p>Available 24/7</p>
-              </div>
-            </a>
-          </div>
+    <!-- Contact Information -->
+    <div class="contact-section">
+      <h2>Contact Information</h2>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <span class="material-icons">email</span>
+          <h3>Email Support</h3>
+          <p>support@phoenix.com</p>
+          <p class="response-time">Response within 24 hours</p>
+        </div>
+        <div class="contact-card">
+          <span class="material-icons">schedule</span>
+          <h3>Support Hours</h3>
+          <p>Monday - Friday</p>
+          <p>9:00 AM - 6:00 PM EST</p>
         </div>
       </div>
     </div>
@@ -92,289 +81,304 @@
 </template>
 
 <script>
+import { getAuth } from 'firebase/auth';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { app } from '../firebase';
+
 export default {
   name: 'HelpSupport',
-  props: {
-    currentDate: {
-      type: String,
-      default: () => new Date().toISOString().split('T')[0]
-    }
-  },
   data() {
     return {
       faqs: [
         {
-          question: 'How do I add money to my account?',
-          answer: 'You can add money to your account by clicking the "Add Money" button in your wallet section. We support multiple payment methods including credit/debit cards, bank transfers, and digital wallets.',
+          question: 'How do I create an account?',
+          answer: 'To create an account, click on the "Sign Up" button on the homepage. You\'ll need to provide your email address, create a password, and verify your email. Once verified, you can complete your profile with additional information.',
+          isOpen: false
+        },
+        {
+          question: 'What are the minimum system requirements?',
+          answer: 'Our platform requires Windows 10 or later, 8GB RAM, and a stable internet connection. For optimal performance, we recommend 16GB RAM, a dedicated graphics card, and a high-speed internet connection.',
+          isOpen: false
+        },
+        {
+          question: 'How do I reset my password?',
+          answer: 'If you\'ve forgotten your password, click the "Forgot Password" link on the login page. Enter your registered email address, and we\'ll send you a password reset link. Follow the instructions in the email to create a new password.',
           isOpen: false
         },
         {
           question: 'How do I update my profile information?',
-          answer: 'Navigate to the Profile section from the sidebar menu. There you can edit your personal information, update security settings, and manage notification preferences.',
+          answer: 'To update your profile, go to the Profile section in your account settings. Click the edit button next to the information you want to change. Remember to save your changes before leaving the page.',
           isOpen: false
         },
         {
-          question: 'What should I do if a transaction fails?',
-          answer: 'If a transaction fails, first check your account balance and payment method details. Most failures are due to insufficient funds or incorrect payment information. If the issue persists, please contact our support team.',
+          question: 'What payment methods are accepted?',
+          answer: 'We accept payment via PayMongo and ingame token ($ASH). All transactions are secure and encrypted for your protection.',
           isOpen: false
         },
         {
-          question: 'How secure is my data on Phoenix?',
-          answer: 'Your security is our priority. We use industry-standard encryption protocols to protect your personal and financial information. All transactions are secured with SSL technology, and we never store your complete payment details.',
+          question: 'How do I report a technical issue?',
+          answer: 'If you encounter a technical issue, please submit a report to support request. Then, contact our support team via email with the details, including your account information and steps to reproduce the issue.',
           isOpen: false
         },
         {
-          question: 'How do I upgrade to a Premium account?',
-          answer: 'To upgrade to Premium, go to your Profile page and select the "Upgrade Account" option. You\'ll see available plans with their features and pricing. Choose the plan that suits your needs and follow the payment instructions.',
+          question: 'Is my personal information secure?',
+          answer: 'Yes, we take security seriously. All personal information is encrypted using industry-standard protocols. We never share your data with third parties without your consent, and we regularly update our security measures.',
+          isOpen: false
+        },
+        {
+          question: 'How do I cancel my subscription?',
+          answer: 'To cancel your subscription, go to your Account Settings and select the Subscription tab. Click on "Cancel Subscription" and follow the prompts. Your access will continue until the end of your current billing period.',
+          isOpen: false
+        },
+        {
+          question: 'What should I do if I can\'t log in?',
+          answer: 'If you\'re having trouble logging in, first check if your caps lock is on and ensure you\'re using the correct email address. If the problem persists, use the "Forgot Password" feature or contact our support team for assistance.',
+          isOpen: false
+        },
+        {
+          question: 'How do I enable two-factor authentication?',
+          answer: 'To enable two-factor authentication, go to your Account Settings and select Security. Click on "Enable 2FA" and follow the setup instructions. You\'ll need to download an authenticator app and scan the QR code provided.',
           isOpen: false
         }
       ],
       supportForm: {
-        issueType: '',
         subject: '',
+        issueType: '',
         message: ''
-      }
+      },
+      supportLoading: false,
+      supportSuccess: false,
+      supportError: ''
     };
   },
   methods: {
-    toggleFaq(index) {
-      // Close all other FAQs
-      this.faqs.forEach((faq, i) => {
-        if (i !== index && faq.isOpen) {
-          faq.isOpen = false;
-        }
-      });
-      
-      // Toggle the clicked FAQ
+    toggleFAQ(index) {
       this.faqs[index].isOpen = !this.faqs[index].isOpen;
     },
-    submitSupportRequest() {
-      // Here you would normally send the form data to your backend
-      // For demo purposes, we'll just show an alert
-      alert('Your support request has been submitted. We\'ll get back to you soon!');
-      
-      // Reset form
-      this.supportForm = {
-        issueType: '',
-        subject: '',
-        message: ''
-      };
-    },
-    startLiveChat() {
-      // Placeholder for live chat functionality
-      alert('Live chat feature would launch here');
+    async submitSupportRequest() {
+      this.supportLoading = true;
+      this.supportSuccess = false;
+      this.supportError = '';
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        const userEmail = user ? user.email : 'Anonymous';
+        const db = getFirestore(app);
+        await addDoc(collection(db, 'supportRequests'), {
+          subject: this.supportForm.subject,
+          issueType: this.supportForm.issueType,
+          message: this.supportForm.message,
+          userEmail,
+          status: 'open',
+          priority: 'medium',
+          timestamp: serverTimestamp()
+        });
+        this.supportSuccess = true;
+        this.supportForm.subject = '';
+        this.supportForm.issueType = '';
+        this.supportForm.message = '';
+      } catch (e) {
+        this.supportError = 'Failed to send request. Please try again.';
+      } finally {
+        this.supportLoading = false;
+      }
     }
   }
 };
 </script>
 
 <style scoped>
+.help-support {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-/* Help & Support Specific Styles - Minimal Design */
-.support-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+.header {
+  text-align: center;
   margin-bottom: 2rem;
 }
 
-.faq-section, .contact-section {
-  background: var(--color-white);
-  border-radius: 0.75rem;
-  padding: 1.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-h2 {
-  font-size: 1.25rem;
-  margin-bottom: 1.5rem;
+.header h1 {
   color: var(--color-dark);
-  font-weight: 600;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
 }
 
-h3 {
+.header p {
+  color: var(--color-dark-variant);
   font-size: 1.1rem;
-  margin: 1.75rem 0 1rem;
+}
+
+.faq-section {
+  margin-bottom: 3rem;
+}
+
+.faq-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
   color: var(--color-dark);
 }
 
-/* Improved Accordion/FAQ styling */
-.accordion {
-  border-radius: 0.5rem;
-  overflow: hidden;
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.accordion-item {
-  margin-bottom: 0.75rem;
-}
-
-.accordion-toggle {
-  width: 100%;
-  text-align: left;
-  padding: 1rem;
-  background: var(--color-background, #f9fafb);
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  color: var(--color-dark);
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.2s ease;
-}
-
-.accordion-toggle:hover {
-  background: var(--color-light);
-}
-
-.accordion-toggle.active {
-  background: var(--color-background, #f9fafb);
-  border-radius: 0.5rem 0.5rem 0 0;
-}
-
-.accordion-toggle .icon {
-  font-size: 1.25rem;
-  font-weight: 300;
-  color: var(--color-primary);
-}
-
-.accordion-content {
-  height: 0;
-  overflow: hidden;
-  transition: height 0.3s ease;
+.faq-item {
   background: var(--color-white);
-  border-radius: 0 0 0.5rem 0.5rem;
-  border: 1px solid var(--color-background, #f9fafb);
-  border-top: none;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
 }
 
-.accordion-content.open {
-  height: auto;
-  padding: 1rem;
-}
-
-.accordion-content p {
-  margin: 0;
-  color: var(--color-dark-variant, #6b7280);
-  line-height: 1.5;
-}
-
-/* Improved form styling */
-.contact-form {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--color-dark);
-}
-
-.form-group input, 
-.form-group select,
-.form-group textarea {
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-light);
-  background: var(--color-white);
-  font-family: inherit;
-  transition: border-color 0.2s ease;
-}
-
-.form-group input:focus, 
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.btn-submit {
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  justify-self: start;
-  min-width: 150px;
-}
-
-.btn-submit:hover {
-  background-color: rgb(233, 30, 7);
-  transform: translateY(-1px);
-}
-
-/* Improved support channels */
-.support-channels {
-  margin-top: 1.5rem;
-}
-
-.channels-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.channel-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background: var(--color-background, #f9fafb);
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.2s ease;
-}
-
-.channel-item:hover {
-  background: var(--color-light);
+.faq-item:hover {
   transform: translateY(-2px);
 }
 
-.channel-item .material-icons {
-  color: var(--color-primary);
-  font-size: 1.5rem;
+.faq-question {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
 }
 
-.channel-item h4 {
+.faq-question h3 {
+  color: var(--color-dark);
+  font-size: 1.1rem;
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
+  flex: 1;
+  padding-right: 1rem;
+}
+
+.faq-answer {
+  padding: 0 1.5rem 1.5rem;
+  color: var(--color-dark-variant);
+  line-height: 1.6;
+}
+
+.contact-section {
+  margin-bottom: 3rem;
+}
+
+.contact-section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
   color: var(--color-dark);
 }
 
-.channel-item p {
-  margin: 0;
-  font-size: 0.8rem;
-  color: var(--color-dark-variant, #6b7280);
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
-@media screen and (min-width: 768px) {
-  .support-container {
-    grid-template-columns: repeat(2, 1fr);
+.contact-card {
+  background: var(--color-white);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  text-align: center;
+}
+
+.contact-card .material-icons {
+  font-size: 2.5rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.contact-card h3 {
+  color: var(--color-dark);
+  margin-bottom: 0.5rem;
+}
+
+.contact-card p {
+  color: var(--color-dark-variant);
+  margin-bottom: 0.5rem;
+}
+
+.response-time {
+  font-size: 0.9rem;
+  color: var(--color-info-dark);
+}
+
+@media screen and (max-width: 768px) {
+  .help-support {
+    padding: 1rem;
   }
-}
 
-@media screen and (max-width: 767px) {
-  .channels-grid {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .faq-question h3 {
+    font-size: 1rem;
+  }
+
+  .contact-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.support-request-box {
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.support-request-box h2 {
+  margin-top: 0;
+  color: var(--color-primary);
+  margin-bottom: 1.5rem;
+}
+.form-group {
+  margin-bottom: 1.2rem;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-dark-variant);
+  font-weight: 500;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-light);
+  border-radius: 5px;
+  font-size: 1rem;
+  color: var(--color-dark);
+}
+.form-actions {
+  text-align: right;
+}
+.form-actions button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.form-actions button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+.support-success {
+  color: #28a745;
+  margin-top: 1rem;
+}
+.support-error {
+  color: #dc3545;
+  margin-top: 1rem;
 }
 </style>

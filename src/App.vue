@@ -11,12 +11,14 @@
        
     </head>
     
-   < <router-view/>>
-    </template>
+    <router-view/>
+</template>
     
-    <script> 
-    
-    </script>
+<script>
+export default {
+    name: 'App'
+}
+</script>
     
 <style>
     /* Base Styles & Variables */
@@ -364,85 +366,266 @@
       background-color: rgba(255, 255, 255, 0.3);
     }
     
-    /* Responsive Styles */
-    @media screen and (max-width: 1200px) {
+    /* Enhanced Responsive Styles */
+    @media screen and (max-width: 1400px) {
       .container {
-        grid-template-columns: 70px 1fr 250px;
+        grid-template-columns: 240px 1fr;
+        padding: 15px;
       }
-    
-      #sidebar {
-        width: 70px;
-      }
-    
-      .sidebar-nav h3 {
+
+      .right-panel {
         display: none;
       }
-    
+
       .insights {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
       }
     }
-    
-    @media screen and (max-width: 768px) {
+
+    @media screen and (max-width: 1200px) {
+      .container {
+        grid-template-columns: 240px 1fr;
+        gap: 15px;
+      }
+
+      .card h1 {
+        font-size: 1.4rem;
+      }
+
+      .wallet-card {
+        padding: 15px;
+      }
+    }
+
+    @media screen and (max-width: 992px) {
       .container {
         grid-template-columns: 1fr;
-        width: 100%;
         padding: 10px;
       }
-    
+
       #sidebar {
         position: fixed;
         left: -100%;
-        width: 240px;
-        height: 100vh;
         top: 0;
-        z-index: 100;
+        height: 100vh;
+        width: 280px;
+        z-index: 1000;
+        transition: var(--transition);
+        background: var(--color-white);
+      }
+
+      #sidebar.active {
+        left: 0;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .close-btn {
+        display: block;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        font-size: 24px;
+      }
+
+      .menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background: var(--color-white);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: var(--box-shadow);
+        cursor: pointer;
         transition: var(--transition);
       }
-    
-      #sidebar.show {
-        left: 0;
+
+      .menu-btn:hover {
+        background: var(--color-light);
       }
-    
-      .sidebar-nav h3 {
-        display: inline;
+
+      .menu-btn .material-icons {
+        font-size: 24px;
+        color: var(--color-dark);
       }
-    
-      .close-btn {
-        display: inline-block;
+
+      main {
+        margin-top: 60px;
       }
-    
-      .menu-toggle {
-        display: inline-block;
-      }
-    
+
       .insights {
         grid-template-columns: 1fr;
+        gap: 15px;
       }
-    
+
+      .table-wrapper {
+        margin: 0 -10px;
+        padding: 0 10px;
+      }
+
+      .wallet-summary {
+        padding: 15px;
+      }
+
+      .card-actions {
+        flex-wrap: wrap;
+      }
+
+      .action-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .dash-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+
+      .date {
+        width: 100%;
+      }
+
+      .date input {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .card h1 {
+        font-size: 1.3rem;
+      }
+
+      .card h3 {
+        font-size: 0.85rem;
+      }
+
+      .card .material-icons {
+        font-size: 24px;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      th, td {
+        padding: 10px 8px;
+        white-space: nowrap;
+      }
+
+      .wallet-card {
+        padding: 12px;
+      }
+
+      .card-balance h1 {
+        font-size: 1.5rem;
+      }
+
+      .action-btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 8px;
+      }
+
+      .menu-btn {
+        top: 10px;
+        left: 10px;
+        width: 36px;
+        height: 36px;
+      }
+
       main {
-        margin-top: 70px;
+        margin-top: 50px;
+        padding: 12px;
       }
-    
-      .right-panel {
-        position: static;
-        height: auto;
-        margin-bottom: 20px;
-        width: 100%;
+
+      .card {
+        padding: 12px;
       }
-    
-      .top-bar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        background-color: var(--color-white);
-        z-index: 99;
-        box-shadow: var(--box-shadow);
+
+      .card h1 {
+        font-size: 1.2rem;
       }
-    
-      .info {
-        display: none;
+
+      .card h3 {
+        font-size: 0.8rem;
+      }
+
+      .card .material-icons {
+        font-size: 20px;
+      }
+
+      .card small {
+        font-size: 0.75rem;
+      }
+
+      table {
+        font-size: 0.8rem;
+      }
+
+      th, td {
+        padding: 8px 6px;
+      }
+
+      .wallet-card {
+        padding: 10px;
+      }
+
+      .card-balance h1 {
+        font-size: 1.3rem;
+      }
+
+      .action-btn {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        min-width: 100px;
+      }
+
+      .profile-photo .material-icons {
+        font-size: 28px;
+      }
+
+      .info p {
+        font-size: 0.9rem;
+      }
+
+      .info small {
+        font-size: 0.75rem;
+      }
+    }
+
+    /* Touch Device Optimizations */
+    @media (hover: none) {
+      .card:hover {
+        transform: none;
+      }
+
+      .sidebar-nav a:hover:not(.active) {
+        background-color: transparent;
+      }
+
+      .action-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .view-all:hover {
+        text-decoration: none;
       }
     }
     </style>
