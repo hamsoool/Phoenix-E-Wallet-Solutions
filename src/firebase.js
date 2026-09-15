@@ -2,16 +2,16 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAyubn_JmJWVYoqer3F48WUopqZFv1Z9f4",
-    authDomain: "phoenix-e-wallet.firebaseapp.com",
-    projectId: "phoenix-e-wallet",
-    storageBucket: "phoenix-e-wallet.firebasestorage.app",
-    messagingSenderId: "1043225526130",
-    appId: "1:1043225526130:web:30ad455e25893db15767eb",
-    measurementId: "G-EZSYB5L7PB"
-  };
+  apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
+  authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VUE_APP_FIREBASE_APP_ID,
+  measurementId: process.env.VUE_APP_FIREBASE_MEASUREMENT_ID
+};
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
-export { app };
+export { app, analytics };
